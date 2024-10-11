@@ -6,4 +6,4 @@ models/
 *.pkl
 *.html
 plots/
-
+.env
