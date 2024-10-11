@@ -1,9 +1,0 @@
-venv
-downloaded_csv/
-models/
-*.xlsx
-*.csv
-*.pkl
-*.html
-plots/
-.env
