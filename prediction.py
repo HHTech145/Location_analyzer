@@ -60,7 +60,7 @@ class PredictionModel:
         predictions_df = pd.DataFrame(predictions_list)
 
         # Create output path using postcode
-        output_path = f"free_map_tools/results/{self.postcode}.xlsx"
+        output_path = f"results/{self.postcode}.xlsx"
         predictions_df.to_excel(output_path, index=False)
         print(f"Predictions saved to {output_path}")
 

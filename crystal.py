@@ -165,7 +165,9 @@ class Crystal:
 
     def display_data(self):
         """Displays the demographic data."""
+        print("_________________________________________")
         print(self.df_demographic)
+
         return self.df_demographic
 
 

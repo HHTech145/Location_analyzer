@@ -6,8 +6,8 @@ from test_2 import WebScraper
 from prediction import PredictionModel
 from plot import PredictionsPlotter
 from crystal import Crystal,WebDriverHelper
-
-
+import re 
+import os 
 
 def load_and_update_excel(new_df,file_path,sheet_name):
     # Load the existing Excel file
@@ -33,7 +33,7 @@ def start_scraper(postcode):
 
     url = 'https://www.freemaptools.com/find-uk-postcodes-inside-radius.htm#google_vignette'
     radius=1
-    directory_path = 'D:/work/automation/free_map_tools/downloaded_csv'
+    directory_path = os.path.join(os.getcwd(),'downloaded_csv')
     # Usage
     scraper = WebScraper(url=url, directory_path=directory_path)
 
@@ -74,7 +74,7 @@ def run_prediction(start_date,end_date):
     df['Month']=9
 
     model = PredictionModel(
-    model_path='free_map_tools/models/xgboost_model_without_crystal_ver_1.pkl',
+    model_path='models/xgboost_model_without_crystal_ver_1.pkl',
     average_df=df,
     postcode=postcode
         )
@@ -111,24 +111,26 @@ def fetch_amenities(postcode,url,demo_df):
     print(df_pubs)
 
     web_helper.close()
+    return df_restaurants,df_pubs
 
-    web_helper.store_data_as_json(postcode=postcode,restaurant_data=df_restaurants,pub_data=df_pubs,demo_df=demo_df)
+    # web_helper.store_data_as_json(postcode=postcode,restaurant_data=df_restaurants,pub_data=df_pubs,demo_df=demo_df)
 
 
 
-def run_plot():
-    postcode_info_path = 'free_map_tools/demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
-    folder_path = 'free_map_tools/results'
-    output_file_name = 'free_map_tools/predictions_plot_with_postcode_info_radius_2.html'
+def run_plot(demo_df,df_restaurants,df_pubs,postcode):
+    postcode_info_path = 'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
+    folder_path = 'results'
+    output_file_name = f"plots/{postcode}.html"
+    # output_file_name = 'predictions_plot_with_postcode_info_radius_sec.html'
 
     plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
-    plotter.run()
+    plotter.run(demo_df,df_restaurants,df_pubs,postcode)
 
 
 if __name__ == "__main__":
-    file_path = 'free_map_tools/demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'  # Update with your file path
+    file_path = 'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'  # Update with your file path
     sheet_name = 'Sheet1'  # Update with your sheet name if needed
-    postcode = "TS1 4AW"
+    postcode = "B37 7GA"
     # average_data={}
     # df=pd.DataFrame()
     # Read the existing Excel file
@@ -188,6 +190,16 @@ if __name__ == "__main__":
     # plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
     # plotter.run()
 
-    
 
-    run_plot()
+    postcode_crystal=re.sub(r"\s+", "", postcode, flags=re.UNICODE)#"TS14AW"
+    url = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
+    demo_df=fetch_demographics(url)
+    url=f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
+    df_restaurants,df_pubs=fetch_amenities(postcode,url,demo_df)
+    postcode_info_path = 'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
+    folder_path = 'results'
+    output_file_name = f"plots/{postcode}.html"
+
+    plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
+    plotter.create_plot_for_crystal(demo_df,df_restaurants,df_pubs)    
+    run_plot(demo_df,df_restaurants,df_pubs,postcode)

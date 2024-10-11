@@ -4,3 +4,6 @@ models/
 *.xlsx
 *.csv
 *.pkl
+*.html
+plots/
+

@@ -1,9 +1,9 @@
 import os
 import pandas as pd
 from bokeh.plotting import figure, save, output_file
-from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, CustomJS, Div
+from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, CustomJS, Div, DataTable, TableColumn
 from bokeh.layouts import column, row
-
+from bokeh.plotting import curdoc
 
 class PredictionsPlotter:
     def __init__(self, postcode_info_path, folder_path, output_file_name):
@@ -14,9 +14,12 @@ class PredictionsPlotter:
         self.postcode_info_df = None
         self.combined_df = None
 
-    def load_postcode_info(self, postcodes):
+    def load_postcode_info(self, postcodes,postcode):
         postcode_info_df = pd.read_excel(self.postcode_info_path)
         postcode_info_df = postcode_info_df.round(3)
+        # limit to only one postcode 
+
+        postcode_info_df=postcode_info_df[postcode_info_df['postcode']==postcode]
 
         # Filter based on provided postcodes
         postcode_info_df = postcode_info_df[postcode_info_df['postcode'].isin(postcodes)]
@@ -24,7 +27,7 @@ class PredictionsPlotter:
         postcode_info_df['Town'] = postcode_info_df['postcode']  # If 'Town' column does not exist, use 'postcode'
         return postcode_info_df
 
-    def load_predictions(self):
+    def load_predictions(self,postcode):
         postcodes = []
         
         for file_name in os.listdir(self.folder_path):
@@ -39,9 +42,9 @@ class PredictionsPlotter:
                 self.all_predictions.append(df)
 
         # Now load postcode info based on collected postcodes
-        self.postcode_info_df = self.load_postcode_info(postcodes)
+        self.postcode_info_df = self.load_postcode_info(postcodes,postcode)
 
-    def process_predictions(self):
+    def process_predictions(self,postcode):
         if not self.all_predictions:
             print("No prediction data available.")
             return
@@ -60,11 +63,12 @@ class PredictionsPlotter:
         self.combined_df = self.combined_df.merge(postcode_averages, on='Postcode', how='left')
         self.combined_df['Average Prediction'].fillna(0, inplace=True)
 
+        self.combined_df=self.combined_df[self.combined_df['Postcode']==postcode]
         print(self.combined_df[['Postcode', 'Prediction', 'Average Prediction']].describe())
 
-    def create_plot(self):
+    def create_plot(self,demographics_df,restaurants_df,pubs_df):
         output_file(self.output_file_name, title="Predictions Plot", mode="inline")
-
+        
         if self.combined_df.empty or self.combined_df[['Prediction', 'Average Prediction']].isnull().any().any():
             print("Error: DataFrame is empty or contains NaN values.")
             return
@@ -97,10 +101,39 @@ class PredictionsPlotter:
 
         self.add_interactivity(p, unique_postcodes, lines, checkbox, postcode_info_div_1, postcode_info_div_2)
 
-        layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2))
+        # layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2),)
+
+        #add crystal 
+
+        # Converting the data to ColumnDataSources
+        demographics_source = ColumnDataSource(demographics_df)
+        restaurants_source = ColumnDataSource(restaurants_df)
+        pubs_source = ColumnDataSource(pubs_df)
+
+        # Defining columns for the Demographics table
+        demographics_columns = [
+            TableColumn(field="Demographics", title="Demographics"),
+            TableColumn(field="Percentage", title="Percentage")
+        ]
+        demographics_table = DataTable(source=demographics_source, columns=demographics_columns, width=800, height=480)
+
+        # Defining columns for the Restaurants table
+        restaurants_columns = [
+            TableColumn(field="Restaurant", title="Restaurant"),
+            TableColumn(field="Distance", title="Distance")
+        ]
+        restaurants_table = DataTable(source=restaurants_source, columns=restaurants_columns, width=800, height=500)
+
+        # Defining columns for the Pubs table
+        pubs_columns = [
+            TableColumn(field="Pub", title="Pub"),
+            TableColumn(field="Distance", title="Distance")
+        ]
+        pubs_table = DataTable(source=pubs_source, columns=pubs_columns, width=1200, height=600)
+
+        layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2),demographics_table,restaurants_table,pubs_table)
 
         save(layout)
-
 
     def add_hover_tool(self, p, source):
         hover = HoverTool(
@@ -178,16 +211,106 @@ class PredictionsPlotter:
             }
         """  # Add your JavaScript callback code here
 
-    def run(self):
-        self.load_predictions()
-        self.process_predictions()
-        self.create_plot()
+    def create_plot_for_crystal(self,demographics_df,restaurants_df,pubs_df):
+        bootstrap_css = """
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f8f9fa;
+                margin: 0;
+                padding: 20px;
+            }
+            .bk-root {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            .bk-root .bk-figure {
+                background-color: #ffffff;
+                border: 1px solid #dddddd;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            .table-container {
+                margin-top: 20px;
+                border: 1px solid #cccccc;
+                padding: 10px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .table-title {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #333333;
+            }
+        </style>
+        """      
+        # Converting the data to ColumnDataSources
+        demographics_source = ColumnDataSource(demographics_df)
+        restaurants_source = ColumnDataSource(restaurants_df)
+        pubs_source = ColumnDataSource(pubs_df)
+
+        # Defining columns for the Demographics table
+        demographics_columns = [
+            TableColumn(field="Demographics", title="Demographics"),
+            TableColumn(field="Percentage", title="Percentage")
+        ]
+        demographics_table = DataTable(source=demographics_source, columns=demographics_columns, width=400, height=280)
+
+        # Defining columns for the Restaurants table
+        restaurants_columns = [
+            TableColumn(field="Restaurant", title="Restaurant"),
+            TableColumn(field="Distance", title="Distance")
+        ]
+        restaurants_table = DataTable(source=restaurants_source, columns=restaurants_columns, width=400, height=150)
+
+        # Defining columns for the Pubs table
+        pubs_columns = [
+            TableColumn(field="Pub", title="Pub"),
+            TableColumn(field="Distance", title="Distance")
+        ]
+        pubs_table = DataTable(source=pubs_source, columns=pubs_columns, width=400, height=200)
+
+        # Convert DataFrames to Bootstrap-styled HTML tables
+        demographics_table = demographics_df.to_html(classes="table table-striped table-bordered", index=False)
+        restaurants_table = restaurants_df.to_html(classes="table table-striped table-hover", index=False)
+        pubs_table = pubs_df.to_html(classes="table table-striped table-dark", index=False)
+
+        # Create Divs for each section title and data table with Bootstrap classes
+        demographics_div = Div(text=f"<div class='table-container'><div class='table-title'>Demographics</div>{demographics_table}</div>")
+        restaurants_div = Div(text=f"<div class='table-container'><div class='table-title'>Restaurants</div>{restaurants_table}</div>")
+        pubs_div = Div(text=f"<div class='table-container'><div class='table-title'>Pubs</div>{pubs_table}</div>")
+
+        # Adding the tables to the layout
+        # layout = column(demographics_table, restaurants_table, pubs_table)
+
+# Save the layout as an HTML file
+        # save(layout, filename="tables_layout.html")
+
+            # Wrap the layout together, including the CSS and content
+        layout = column(
+            Div(text=bootstrap_css), # Inline CSS at the top
+            demographics_div, 
+            restaurants_div, 
+            pubs_div
+        )
+                # Output to an HTML file and display
+        output_file("bootstrap_styled_prediction_plot.html")
+        save(layout)
+    
+    def run(self,demo_df,df_restaurants,df_pubs,postcode):
+        self.load_predictions(postcode)
+        self.process_predictions(postcode)
+        self.create_plot(demo_df,df_restaurants,df_pubs)
 
 # # Usage
 if __name__ == "__main__":
-    postcode_info_path = 'free_map_tools/demographic_file/updated_outer_demog_sales_data_radius_1.xlsx'
-    folder_path = 'free_map_tools/results'
-    output_file_name = 'free_map_tools/predictions_plot_with_postcode_info_radius_2.html'
+    postcode_info_path = 'demographic_file/updated_outer_demog_sales_data_radius_1.xlsx'
+    folder_path = 'results'
+    # output_file_name = 'predictions_plot_with_postcode_info_radius_2.html'
 
-    plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
-    plotter.run()
+    # plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
+    # plotter.run()
