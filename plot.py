@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from bokeh.plotting import figure, save, output_file
+from bokeh.plotting import figure, save, output_file, show
 from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, CustomJS, Div, DataTable, TableColumn
 from bokeh.layouts import column, row
 from bokeh.plotting import curdoc
@@ -104,6 +104,33 @@ class PredictionsPlotter:
         # layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2),)
 
         #add crystal 
+        # postcode_df=self.postcode_info_df.transpose(T)
+
+        # Convert columns to rows
+        # Convert columns to rows
+        demographics = self.postcode_info_df.columns.tolist()
+        values = self.postcode_info_df.iloc[0].tolist()
+
+        # Create a new DataFrame for the converted format with string keys
+        converted_df = pd.DataFrame({
+            'Demographics': demographics,
+            'Values': values
+        })
+    
+        # Create a new DataFrame for the converted format
+        # converted_df = pd.DataFrame([demographics, values], index=['Demographics', 'Values'])
+
+
+        postcode_info_source = ColumnDataSource(converted_df)
+
+
+        postcode_info_columns = [
+            TableColumn(field="Demographics", title="Demographics"),
+            TableColumn(field="Values", title="Values")
+        ]
+        postcode_info_table = DataTable(source=postcode_info_source, columns=postcode_info_columns, width=800, height=500)
+
+        ###############################################
 
         # Converting the data to ColumnDataSources
         demographics_source = ColumnDataSource(demographics_df)
@@ -115,7 +142,7 @@ class PredictionsPlotter:
             TableColumn(field="Demographics", title="Demographics"),
             TableColumn(field="Percentage", title="Percentage")
         ]
-        demographics_table = DataTable(source=demographics_source, columns=demographics_columns, width=800, height=480)
+        demographics_table = DataTable(source=demographics_source, columns=demographics_columns, width=800, height=500)
 
         # Defining columns for the Restaurants table
         restaurants_columns = [
@@ -129,11 +156,39 @@ class PredictionsPlotter:
             TableColumn(field="Pub", title="Pub"),
             TableColumn(field="Distance", title="Distance")
         ]
-        pubs_table = DataTable(source=pubs_source, columns=pubs_columns, width=1200, height=600)
+        pubs_table = DataTable(source=pubs_source, columns=pubs_columns, width=800, height=600)
 
-        layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2),demographics_table,restaurants_table,pubs_table)
+    # Create headers for the tables
+        postcode_info_header=Div(text="<h3>Postcode area Demographics</h3>", width=800)
+        demographics_header = Div(text="<h3>Ethnicity,Religion,Households</h3>", width=800)
+        restaurants_header = Div(text="<h3>Restaurants Near Postcode</h3>", width=800)
+        pubs_header = Div(text="<h3>Bars, pubs, clubs</h3>", width=800)
+
+
+        layout = column(
+            checkbox, 
+            p,
+            row(), 
+            postcode_info_header,postcode_info_table,
+            demographics_header, demographics_table,
+            restaurants_header, restaurants_table,
+            pubs_header, pubs_table
+        )
+
+        # Organize the layout with headers above each table
+        # layout = column(
+        #     checkbox, 
+        #     p, 
+        #     row(postcode_info_div_1, postcode_info_div_2),
+        #     demographics_header, demographics_table,
+        #     restaurants_header, restaurants_table,
+        #     pubs_header, pubs_table
+        # )
+
+        # layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2),demographics_table,restaurants_table,pubs_table)
 
         save(layout)
+        show(layout)
 
     def add_hover_tool(self, p, source):
         hover = HoverTool(

@@ -10,18 +10,11 @@ import re
 import os 
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 
 # Load the environment variables from .env file
 load_dotenv()
 
-# Initialize FastAPI
-app = FastAPI()
 
-# Define a Pydantic model for input data
-class PostcodeRequest(BaseModel):
-    postcode: str
 
 def load_and_update_excel(new_df,file_path,sheet_name):
     # Load the existing Excel file
@@ -80,7 +73,7 @@ def check_data(postcode,file_path,sheet_name):
         load_and_update_excel(df,file_path,sheet_name)
         return df
     
-def run_prediction(start_date,end_date,df,postcode):
+def run_prediction(start_date,end_date):
 
     df['Year']=2024
     df['Week']=34
@@ -129,6 +122,7 @@ def fetch_amenities(postcode,url,demo_df):
     # web_helper.store_data_as_json(postcode=postcode,restaurant_data=df_restaurants,pub_data=df_pubs,demo_df=demo_df)
 
 
+
 def run_plot(demo_df,df_restaurants,df_pubs,postcode):
     postcode_info_path = os.environ.get('demographic_file_path') #'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
     folder_path = os.environ.get('prediction_results_path') #'results'
@@ -139,39 +133,58 @@ def run_plot(demo_df,df_restaurants,df_pubs,postcode):
     plotter.run(demo_df,df_restaurants,df_pubs,postcode)
 
 
-# Define the endpoint
-@app.get("/process_postcode/")
-async def process_postcode(postcode: str):
-    postcode = postcode
-    # postcode = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
+if __name__ == "__main__":
+    file_path = os.environ.get('demographic_file_path') #'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'  # Update with your file path
+    sheet_name = 'Sheet1'  # Update with your sheet name if needed
+    postcode = "N19 5RD"
+
+  
+    df=check_data(postcode,file_path,sheet_name)
+
+
+
+    # # Display the DataFrame
+    # print(df)
     
-    # Define file path and sheet name
-    file_path = os.environ.get('demographic_file_path')
-    sheet_name = 'Sheet1'
-    
-    # Check and update data
-    try:
-        df = check_data(postcode, file_path, sheet_name)
-        #run prediction
-        start_date="01/01/2024"
-        end_date="12/28/2024"
-        run_prediction(start_date=start_date,end_date=end_date,df=df,postcode=postcode)
-        #run on crystal 
-        postcode_crystal=re.sub(r"\s+", "", postcode, flags=re.UNICODE)#"TS14AW"
-        url = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
-        demo_df=fetch_demographics(url)
-        url=f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
-        df_restaurants,df_pubs=fetch_amenities(postcode,url,demo_df)
-            
-        # Generate plot
-        run_plot(demo_df,df_restaurants,df_pubs,postcode)
-        
-        return {"message": "Data processed successfully", "postcode": postcode}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # df['postcode']=postcode
 
-# Run the server
-# Command: uvicorn main:app --reload
+    # #update deomgraphics 
+    # load_and_update_excel(df,file_path,sheet_name)
+
+    # df['Year']=2024
+    # df['Week']=34
+    # df['Month']=9
+
+    # model = PredictionModel(
+    # model_path='free_map_tools/models/xgboost_model_without_crystal_ver_1.pkl',
+    # average_df=df,
+    # postcode=postcode
+    #     )
+    # model.generate_predictions(start_date="01/01/2021", end_date="12/28/2026")
+    start_date="01/01/2024"
+    end_date="12/28/2024"
+    run_prediction(start_date=start_date,end_date=end_date)
+
+    #plot
+
+    # # Usage
+    # postcode_info_path = 'free_map_tools/demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
+    # folder_path = 'free_map_tools/results'
+    # output_file_name = 'free_map_tools/predictions_plot_with_postcode_info_radius_2.html'
+
+    # plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
+    # plotter.run()
 
 
+    postcode_crystal=re.sub(r"\s+", "", postcode, flags=re.UNICODE)#"TS14AW"
+    url = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
+    demo_df=fetch_demographics(url)
+    url=f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
+    df_restaurants,df_pubs=fetch_amenities(postcode,url,demo_df)
+    # postcode_info_path = 'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
+    # folder_path = 'results'
+    # output_file_name = f"plots/{postcode}.html"
 
+    # plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
+    # plotter.create_plot_for_crystal(demo_df,df_restaurants,df_pubs)    
+    run_plot(demo_df,df_restaurants,df_pubs,postcode)

@@ -1,6 +1,13 @@
 import pandas as pd
 import pickle
 from datetime import datetime, timedelta
+import os 
+
+from dotenv import load_dotenv
+
+# Load the environment variables from .env file
+load_dotenv()
+
 
 class PredictionModel:
     def __init__(self, model_path, average_df, postcode):
@@ -60,7 +67,7 @@ class PredictionModel:
         predictions_df = pd.DataFrame(predictions_list)
 
         # Create output path using postcode
-        output_path = f"results/{self.postcode}.xlsx"
+        output_path = f"{os.environ.get('prediction_results_path')}/{self.postcode}.xlsx"
         predictions_df.to_excel(output_path, index=False)
         print(f"Predictions saved to {output_path}")
 
