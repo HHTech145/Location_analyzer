@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 from datetime import datetime, timedelta
 
-from test_2 import WebScraper
+from free_map_tool import WebScraper
 from prediction import PredictionModel
 from plot import PredictionsPlotter
 from crystal import Crystal,WebDriverHelper
@@ -12,12 +12,19 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
+from fastapi.staticfiles import StaticFiles
 # Load the environment variables from .env file
 load_dotenv()
 
 # Initialize FastAPI
 app = FastAPI()
+
+#add file
+
+# Mount static files route for accessing HTML files
+output_dir = os.environ.get('plots_output_path', './output')
+app.mount("/files", StaticFiles(directory=output_dir), name="files")
+
 
 # Define a Pydantic model for input data
 class PostcodeRequest(BaseModel):
@@ -166,7 +173,13 @@ async def process_postcode(postcode: str):
         # Generate plot
         run_plot(demo_df,df_restaurants,df_pubs,postcode)
         
-        return {"message": "Data processed successfully", "postcode": postcode}
+        # return {"message": "Data processed successfully", "postcode": postcode}
+            # Return a URL to access the HTML file
+        file_url=f"https://85b5-154-192-8-85.ngrok-free.app/files/{postcode}.html"
+        return file_url
+        # file_url = f"http://127.0.0.1:8000/{os.environ.get('plots_output_path')}/{postcode}.html"
+        # print(file_url)
+        # return {"url": file_url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

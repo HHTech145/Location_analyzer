@@ -17,7 +17,8 @@ class PredictionsPlotter:
     def load_postcode_info(self, postcodes,postcode):
         postcode_info_df = pd.read_excel(self.postcode_info_path)
         postcode_info_df = postcode_info_df.round(3)
-        # limit to only one postcode 
+        # limit to only one p   ostcode 
+        print("_________________________________",postcode)
 
         postcode_info_df=postcode_info_df[postcode_info_df['postcode']==postcode]
 
@@ -25,24 +26,29 @@ class PredictionsPlotter:
         postcode_info_df = postcode_info_df[postcode_info_df['postcode'].isin(postcodes)]
         print(postcode_info_df)
         postcode_info_df['Town'] = postcode_info_df['postcode']  # If 'Town' column does not exist, use 'postcode'
+        print("############################################",postcode_info_df)
         return postcode_info_df
 
     def load_predictions(self,postcode):
+        postcode_0=postcode
+        print("________________________________________________________________ load predictions",postcode)
         postcodes = []
         
         for file_name in os.listdir(self.folder_path):
             if file_name.endswith('.xlsx'):
-                postcode = os.path.splitext(file_name)[0]
-                postcodes.append(postcode)
-                
-                file_path = os.path.join(self.folder_path, file_name)
-                df = pd.read_excel(file_path)
-                df['Date'] = pd.to_datetime(df['Date'])
-                df['Postcode'] = postcode
-                self.all_predictions.append(df)
+                if file_name==f"{postcode}.xlsx":
+                    postcode = os.path.splitext(file_name)[0]
+                    postcodes.append(postcode)
+                    
+                    file_path = os.path.join(self.folder_path, file_name)
+                    df = pd.read_excel(file_path)
+                    df['Date'] = pd.to_datetime(df['Date'])
+                    df['Postcode'] = postcode
+                    self.all_predictions.append(df)
 
         # Now load postcode info based on collected postcodes
-        self.postcode_info_df = self.load_postcode_info(postcodes,postcode)
+        print("________________________________________________________________ load predictions",postcode)
+        self.postcode_info_df = self.load_postcode_info(postcodes,postcode_0)
 
     def process_predictions(self,postcode):
         if not self.all_predictions:
@@ -116,6 +122,7 @@ class PredictionsPlotter:
             'Demographics': demographics,
             'Values': values
         })
+        # print(self.postcode_info_df)
     
         # Create a new DataFrame for the converted format
         # converted_df = pd.DataFrame([demographics, values], index=['Demographics', 'Values'])

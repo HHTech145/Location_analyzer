@@ -19,6 +19,12 @@ class WebDriverManager:
 
     def instantiate_driver(self):
         options = webdriver.ChromeOptions()
+        options.add_argument("--headless")  # Run Chrome in headless mode
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")  # Optional, for better performance
+        options.add_argument("--window-size=1920x1080")  # Optional, set window size
+        options.add_argument("--window-position=-2400,-2400")
         options.add_argument('--user-data-dir=C:/Users/USER/AppData/Local/Google/Chrome/User Data/Default')
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
@@ -54,7 +60,7 @@ class WebDriverManager:
         sleep(10)
 
     def click_on_save_csv(self):
-        sleep(10)
+        sleep(4)
         csv_button = WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.XPATH, '(//*[@id="btnDownloadCSV"])[1]'))
         )
@@ -62,7 +68,6 @@ class WebDriverManager:
         WebDriverWait(self.driver, 20).until(EC.element_to_be_clickable((By.XPATH, '(//*[@id="btnDownloadCSV"])[1]'))).click()
         sleep(1)
 
-    
     def quit(self):
         self.driver.quit()
 
