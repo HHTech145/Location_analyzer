@@ -19,6 +19,12 @@ load_dotenv()
 # Initialize FastAPI
 app = FastAPI()
 
+# for parallel processing 
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
+
+executor = ThreadPoolExecutor()
+
 #add file
 
 # Mount static files route for accessing HTML files
@@ -150,38 +156,75 @@ def run_plot(demo_df,df_restaurants,df_pubs,postcode):
 @app.get("/process_postcode/")
 async def process_postcode(postcode: str):
     postcode = postcode
-    # postcode = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
-    
     # Define file path and sheet name
     file_path = os.environ.get('demographic_file_path')
     sheet_name = 'Sheet1'
-    
+
     # Check and update data
     try:
-        df = check_data(postcode, file_path, sheet_name)
-        #run prediction
-        start_date="01/01/2024"
-        end_date="12/28/2024"
-        run_prediction(start_date=start_date,end_date=end_date,df=df,postcode=postcode)
-        #run on crystal 
-        postcode_crystal=re.sub(r"\s+", "", postcode, flags=re.UNICODE)#"TS14AW"
-        url = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
-        demo_df=fetch_demographics(url)
-        url=f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
-        df_restaurants,df_pubs=fetch_amenities(postcode,url,demo_df)
-            
-        # Generate plot
-        run_plot(demo_df,df_restaurants,df_pubs,postcode)
+        loop = asyncio.get_event_loop()
+
+        # Run scraper and predictions in a separate thread using ThreadPoolExecutor
+        df = await loop.run_in_executor(executor, check_data, postcode, file_path, sheet_name)
         
-        # return {"message": "Data processed successfully", "postcode": postcode}
-            # Return a URL to access the HTML file
-        file_url=f"https://85b5-154-192-8-85.ngrok-free.app/files/{postcode}.html"
+        start_date = "01/01/2024"
+        end_date = "12/28/2024"
+        await loop.run_in_executor(executor, run_prediction, start_date, end_date, df, postcode)
+
+        # Fetch data from Crystal
+        postcode_crystal = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
+        url_demographics = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
+        demo_df = await loop.run_in_executor(executor, fetch_demographics, url_demographics)
+
+        url_amenities = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
+        df_restaurants, df_pubs = await loop.run_in_executor(executor, fetch_amenities, postcode, url_amenities, demo_df)
+
+        # Generate plot
+        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs, postcode)
+
+        # Return file URL
+        file_url = f"https://d99a-154-192-9-100.ngrok-free.app/files/{postcode}.html"
         return file_url
-        # file_url = f"http://127.0.0.1:8000/{os.environ.get('plots_output_path')}/{postcode}.html"
-        # print(file_url)
-        # return {"url": file_url}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Define the endpoint
+# @app.get("/process_postcode/")
+# async def process_postcode(postcode: str):
+#     postcode = postcode
+#     # postcode = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
+    
+#     # Define file path and sheet name
+#     file_path = os.environ.get('demographic_file_path')
+#     sheet_name = 'Sheet1'
+    
+#     # Check and update data
+#     try:
+#         df = check_data(postcode, file_path, sheet_name)
+#         #run prediction
+#         start_date="01/01/2024"
+#         end_date="12/28/2024"
+#         run_prediction(start_date=start_date,end_date=end_date,df=df,postcode=postcode)
+#         #run on crystal 
+#         postcode_crystal=re.sub(r"\s+", "", postcode, flags=re.UNICODE)#"TS14AW"
+#         url = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
+#         demo_df=fetch_demographics(url)
+#         url=f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
+#         df_restaurants,df_pubs=fetch_amenities(postcode,url,demo_df)
+            
+#         # Generate plot
+#         run_plot(demo_df,df_restaurants,df_pubs,postcode)
+        
+#         # return {"message": "Data processed successfully", "postcode": postcode}
+#             # Return a URL to access the HTML file
+#         file_url=f"https://d99a-154-192-9-100.ngrok-free.app/files/{postcode}.html"
+#         return file_url
+#         # file_url = f"http://127.0.0.1:8000/{os.environ.get('plots_output_path')}/{postcode}.html"
+#         # print(file_url)
+#         # return {"url": file_url}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 # Run the server
 # Command: uvicorn main:app --reload

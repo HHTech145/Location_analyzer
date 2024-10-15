@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-
+import tempfile
 
 class WebDriverManager:
     def __init__(self, url):
@@ -25,7 +25,12 @@ class WebDriverManager:
         options.add_argument("--disable-gpu")  # Optional, for better performance
         options.add_argument("--window-size=1920x1080")  # Optional, set window size
         options.add_argument("--window-position=-2400,-2400")
-        options.add_argument('--user-data-dir=C:/Users/USER/AppData/Local/Google/Chrome/User Data/Default')
+        # options.add_argument('--user-data-dir=C:/Users/USER/AppData/Local/Google/Chrome/User Data/Default')
+
+        # Use a unique temp directory for each session
+        temp_dir = tempfile.mkdtemp()
+        options.add_argument(f"--user-data-dir={temp_dir}")
+
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(self.url)

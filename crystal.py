@@ -13,7 +13,7 @@ import pandas as pd
 import time
 import re 
 import json 
-
+import tempfile
 
 class WebDriverHelper:
     def __init__(self, url):
@@ -30,7 +30,9 @@ class WebDriverHelper:
         options.add_argument("--window-size=1920x1080")  # Optional, set window size
         options.add_argument("--window-position=-2400,-2400")
         options.add_argument('--start-maximized')
-        
+        temp_dir = tempfile.mkdtemp()
+        options.add_argument(f"--user-data-dir={temp_dir}")
+
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         return driver
 
