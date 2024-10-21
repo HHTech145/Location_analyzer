@@ -31,8 +31,14 @@ The Location Analysis System is designed to gather, analyze, and visualize demog
 │
 ├── 📁 demographic_data            # Stores demographic data files
 ├── 📁 models                      # Pre-trained models for prediction
+├── 📁 downloaded_csv              # contain csv file download from free map tools 
 ├── 📁 results                     # Results and output files
-├── 📁 scripts                     # Python scripts for scraping and processing
+├── 📁 plots                       # store html files of prediction 
+└── 📄 main.py                     # Main FastAPI server file
+└── 📄 free_map_tool.py            # Free map tool website automation script
+└── 📄 crystal.py                  # Crystal roof website autoamtion script
+└── 📄 plot.py                     # Draw and handle plot creation script
+└── 📄 prediction.py               # Run prediction on demographics script
 └── 📄 main.py                     # Main FastAPI server file
 └── 📄 README.md                   # Documentation
 └── 📄 requirements.txt            # Dependencies
