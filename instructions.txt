@@ -1,0 +1,9 @@
+.\venv\Scripts\activate
+
+cd app
+
+Run a fast api server 
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+Run Ngrok server 
+ngrok http 8000

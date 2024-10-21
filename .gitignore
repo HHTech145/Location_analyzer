@@ -8,3 +8,7 @@ models/
 plots/
 .env
 *.pyc
+Dockerfile
+.dockerignore
+*.vscode
+*__pycache__

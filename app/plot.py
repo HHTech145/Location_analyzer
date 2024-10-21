@@ -80,7 +80,7 @@ class PredictionsPlotter:
             return
 
         p = figure(x_axis_type='datetime', width=1500, height=800,
-                   title="Predictions for All Postcodes with Demographics",
+                   title="Predictions of Postcode with Demographics",
                    x_axis_label='Date', y_axis_label='Prediction')
 
         unique_postcodes = self.combined_df['Postcode'].unique()
@@ -195,7 +195,7 @@ class PredictionsPlotter:
         # layout = column(checkbox, p, row(postcode_info_div_1, postcode_info_div_2),demographics_table,restaurants_table,pubs_table)
 
         save(layout)
-        show(layout)
+        # show(layout)
 
     def add_hover_tool(self, p, source):
         hover = HoverTool(

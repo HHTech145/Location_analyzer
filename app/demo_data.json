@@ -1,0 +1,226 @@
+{
+    "UB1 3DA": {
+        "radius": [
+            1.61
+        ],
+        "predictions": [
+            1000
+        ],
+        "demographics": {
+            "population": 49249,
+            "households": 16072,
+            "avg_household_income": 42900,
+            "unemployment_rate": 0.1263,
+            "working": 0.75,
+            "unemployed": 0.24,
+            "ab": 0.14,
+            "c1/c2": 0.51,
+            "de": 0.33
+        },
+        "crystal": {
+            "ethnicity": {
+                "Indian": 67.0,
+                "Other Asian": 6.0,
+                "Pakistani": 6.0,
+                "Bangladeshi": 6.0,
+                "Black African": 5.0,
+                "Other White": 4.0,
+                "White British": 2.4,
+                "Mixed": 1.9,
+                "Other": 1.6,
+                "Other Black": 0.3,
+                "White Irish": 0.2,
+                "Chinese": 0.2,
+                "Black Caribbean": 0.2,
+                "Arab": 0.2,
+                "Gypsy": 0.0,
+                "Roma": 0.0,
+                "Christian": 49.0,
+                "Muslim": 21.0,
+                "Hindu": 15.0,
+                "Sikh": 8.0,
+                "Religion Not Stated": 4.0,
+                "No Religion": 4.0,
+                "Buddhist": 0.2,
+                "Jewish": 0.0,
+                "Other Religion": 0.0,
+                "Aged 20 to 39": 34.0,
+                "Aged 40 to 59": 32.0,
+                "Aged under 20": 28.0,
+                "Aged 60 to 79": 6.0,
+                "Aged 80 and over": 0.3,
+                "Single-family: with dependent children": 31.0,
+                "Multiple families or unrelated people": 31.0,
+                "One-person household": 19.0,
+                "Single-family: no children": 8.0,
+                "Single-family: with non-dependent children": 8.0,
+                "Single-family: other": 3.0,
+                "Single-family: all aged 66 and over": 0.0
+            },
+            "restaurants": [
+                {
+                    "Restaurant": "Biryani Hub Southall",
+                    "Distance": "3 yards"
+                },
+                {
+                    "Restaurant": "Subway",
+                    "Distance": "3 yards"
+                },
+                {
+                    "Restaurant": "TFC",
+                    "Distance": "3 yards"
+                },
+                {
+                    "Restaurant": "Biryanimax",
+                    "Distance": "3 yards"
+                },
+                {
+                    "Restaurant": "Somali Culture",
+                    "Distance": "3 yards"
+                },
+                {
+                    "Restaurant": "Watani Bakery",
+                    "Distance": "15 yards"
+                },
+                {
+                    "Restaurant": "Maeme's Southall",
+                    "Distance": "25 yards"
+                },
+                {
+                    "Restaurant": "Shahi Haweli",
+                    "Distance": "55 yards"
+                },
+                {
+                    "Restaurant": "Kathmandu Zone Restaurant",
+                    "Distance": "66 yards"
+                },
+                {
+                    "Restaurant": "KFC Southall",
+                    "Distance": "66 yards"
+                },
+                {
+                    "Restaurant": "Chana Health - Pharmacy & Clinic",
+                    "Distance": "68 yards"
+                },
+                {
+                    "Restaurant": "Tops Pizza",
+                    "Distance": "70 yards"
+                },
+                {
+                    "Restaurant": "Ifka Kofee",
+                    "Distance": "75 yards"
+                },
+                {
+                    "Restaurant": "Barako Coffee",
+                    "Distance": "75 yards"
+                },
+                {
+                    "Restaurant": "Roshni",
+                    "Distance": "81 yards"
+                },
+                {
+                    "Restaurant": "Selekt Chicken Southall",
+                    "Distance": "82 yards"
+                },
+                {
+                    "Restaurant": "Wok & Karahi",
+                    "Distance": "85 yards"
+                },
+                {
+                    "Restaurant": "KidzBuzz",
+                    "Distance": "86 yards"
+                },
+                {
+                    "Restaurant": "Icy N Spicy",
+                    "Distance": "91 yards"
+                },
+                {
+                    "Restaurant": "Naeem Juice Corner",
+                    "Distance": "91 yards"
+                }
+            ],
+            "pubs": [
+                {
+                    "Pub": "The Terrace",
+                    "Distance": "0.1 miles"
+                },
+                {
+                    "Pub": "The Plough",
+                    "Distance": "0.2 miles"
+                },
+                {
+                    "Pub": "Monsoon Banqueting Suite (Bar Only)",
+                    "Distance": "0.6 miles"
+                },
+                {
+                    "Pub": "The Underground Bar",
+                    "Distance": "0.8 miles"
+                },
+                {
+                    "Pub": "West Middlesex Golf Club (Bar Only)",
+                    "Distance": "0.9 miles"
+                },
+                {
+                    "Pub": "The Scotsman Pub & Restaurant",
+                    "Distance": "1.0 miles"
+                },
+                {
+                    "Pub": "Lavish Lounge",
+                    "Distance": "1.0 miles"
+                },
+                {
+                    "Pub": "Goals Soccer Centre",
+                    "Distance": "1.1 miles"
+                },
+                {
+                    "Pub": "Prince Of Wales Southall",
+                    "Distance": "1.1 miles"
+                },
+                {
+                    "Pub": "Yeading Community Centre",
+                    "Distance": "1.1 miles"
+                },
+                {
+                    "Pub": "The Plough",
+                    "Distance": "1.2 miles"
+                },
+                {
+                    "Pub": "The Old Oak Tree Pub",
+                    "Distance": "1.2 miles"
+                },
+                {
+                    "Pub": "Walnut Tree",
+                    "Distance": "1.4 miles"
+                },
+                {
+                    "Pub": "The Viaduct Pub",
+                    "Distance": "1.4 miles"
+                },
+                {
+                    "Pub": "The Fox Inn",
+                    "Distance": "1.4 miles"
+                },
+                {
+                    "Pub": "Dicey Reillys",
+                    "Distance": "1.4 miles"
+                },
+                {
+                    "Pub": "The Raging Ball",
+                    "Distance": "1.5 miles"
+                },
+                {
+                    "Pub": "The Three Wishes",
+                    "Distance": "1.5 miles"
+                },
+                {
+                    "Pub": "The Hare And Hounds",
+                    "Distance": "1.5 miles"
+                },
+                {
+                    "Pub": "Greenford Arms",
+                    "Distance": "1.5 miles"
+                }
+            ]
+        }
+    }
+}

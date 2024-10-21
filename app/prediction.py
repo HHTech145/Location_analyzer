@@ -38,7 +38,7 @@ class PredictionModel:
 
         # Create a list to hold predictions
         predictions_list = []
-
+        predictions_list_avg_calculator=[]
         # Loop through the date range
         current_date = start_date
         while current_date <= end_date:
@@ -55,9 +55,10 @@ class PredictionModel:
 
             # Store the results
             for pred in predictions:
+                # print(pred,type(pred))
                 predictions_list.append({
                     'Date': current_date,
-                    'Prediction': pred
+                    'Prediction': pred+3000.0
                 })
 
             # Move to the next date
@@ -66,10 +67,12 @@ class PredictionModel:
         # Create a DataFrame from predictions
         predictions_df = pd.DataFrame(predictions_list)
 
+        average=sum(predictions) / len(predictions)
         # Create output path using postcode
         output_path = f"{os.environ.get('prediction_results_path')}/{self.postcode}.xlsx"
         predictions_df.to_excel(output_path, index=False)
         print(f"Predictions saved to {output_path}")
+        return average
 
 # Usage
 if __name__ == "__main__":

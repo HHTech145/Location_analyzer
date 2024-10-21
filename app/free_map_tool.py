@@ -11,6 +11,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import tempfile
+import glob 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class WebDriverManager:
     def __init__(self, url):
@@ -18,6 +23,7 @@ class WebDriverManager:
         self.driver = self.instantiate_driver()
 
     def instantiate_driver(self):
+        print("in free map ")
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")  # Run Chrome in headless mode
         options.add_argument("--no-sandbox")
@@ -30,13 +36,23 @@ class WebDriverManager:
         # Use a unique temp directory for each session
         temp_dir = tempfile.mkdtemp()
         options.add_argument(f"--user-data-dir={temp_dir}")
+        base_download_dir = "D:\\work\\automation\\free_map_tools\\final\\Location_analyzer\\app\\downloaded_csv"
+
+        prefs = {"download.default_directory" :base_download_dir}
+        options.add_experimental_option("prefs",prefs)
 
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(self.url)
+        print("in free map ")
         sleep(2)
         driver.execute_script("document.body.style.zoom='50%'")
         return driver
+    
+    def clear_csv_folder(self):
+        files = glob.glob('/YOUR/PATH/*')
+        for f in files:
+            os.remove(f)
 
     def input_radius_and_postcode(self, postcode,radius):
         # input_field = self.driver.find_element(By.ID, "locationSearchTextBox")
@@ -55,6 +71,7 @@ class WebDriverManager:
         input_field.clear()
 
         # Pass a value into the input field
+        print("_____________postcode_____________________________________",postcode)
         input_field.send_keys(postcode)
 
     def click_on_search(self):
@@ -173,10 +190,8 @@ class DemographicsExtractor:
             "non_white": non_white
     }
 
-
 class DemographicsCalculator:
     @staticmethod
-
     def average_demographics(demo_list):
         # Initialize cumulative sums and counts
         total_population = 0
@@ -191,55 +206,165 @@ class DemographicsCalculator:
         total_white = 0
         total_non_white = 0
         
+        # To count how many valid entries for each field
+        population_count = 0
+        household_count = 0
+        unemployment_rate_count = 0
+        avg_income_count = 0
+        working_count = 0
+        unemployed_count = 0
+        ab_grade_count = 0
+        c2_grade_count = 0
+        de_grade_count = 0
+        white_count = 0
+        non_white_count = 0
+        
         for demo in demo_list:
-            # Convert values to proper types for calculations
-            total_population += int(demo['total_population'].replace(',', ''))
-            total_households += int(demo['households'].replace(',', ''))
-            print("demo['unemployment_rate']",demo['unemployment_rate'])
-            # Convert unemployment_rate to float and divide by 100
-            total_unemployment_rate += float(demo['unemployment_rate'].strip('%')) / 100  
-            # total_unemployment_rate += float(demo['unemployment_rate'].strip('%')) / 100 
-            
-            # Convert avg_household_income to int for average calculation
-            total_avg_income += int(demo['avg_household_income'].replace('£', '').replace(',', ''))
-            
-            # Convert percentages for working, unemployed, ab, c1/c2, de, white, non-white to float and divide by 100
-            total_working += int(demo['working'].strip('%'))  # Keep as percentage for average
-            total_unemployed += int(demo['unemployed'].strip('%'))  # Keep as percentage for average
-            total_ab_grade += int(demo['ab_grade'].strip('%'))  # Keep as percentage for average
-            total_c2_grade += int(demo['c2_grade'].strip('%'))  # Keep as percentage for average
-            total_de_grade += int(demo['de_grade'].strip('%'))  # Keep as percentage for average
-            total_white += int(demo['white'].strip('%'))  # Keep as percentage for average
-            total_non_white += int(demo['non_white'].strip('%'))  # Keep as percentage for average
+            # Safely handle missing keys using `.get()` with default values
+            if 'total_population' in demo:
+                total_population += int(demo['total_population'].replace(',', ''))
+                population_count += 1
+                
+            if 'households' in demo:
+                total_households += int(demo['households'].replace(',', ''))
+                household_count += 1
 
-        print("total_unemployment_rate:",total_unemployment_rate)
-        count = len(demo_list)
-        
-        # Calculate averages
+            if 'unemployment_rate' in demo:
+                total_unemployment_rate += float(demo['unemployment_rate'].strip('%')) / 100
+                unemployment_rate_count += 1
+
+            if 'avg_household_income' in demo:
+                total_avg_income += int(demo['avg_household_income'].replace('£', '').replace(',', ''))
+                avg_income_count += 1
+
+            if 'working' in demo:
+                total_working += int(demo['working'].strip('%'))
+                working_count += 1
+
+            if 'unemployed' in demo:
+                total_unemployed += int(demo['unemployed'].strip('%'))
+                unemployed_count += 1
+
+            if 'ab_grade' in demo:
+                total_ab_grade += int(demo['ab_grade'].strip('%'))
+                ab_grade_count += 1
+
+            if 'c2_grade' in demo:
+                total_c2_grade += int(demo['c2_grade'].strip('%'))
+                c2_grade_count += 1
+
+            if 'de_grade' in demo:
+                total_de_grade += int(demo['de_grade'].strip('%'))
+                de_grade_count += 1
+
+            if 'white' in demo:
+                total_white += int(demo['white'].strip('%'))
+                white_count += 1
+
+            if 'non_white' in demo:
+                total_non_white += int(demo['non_white'].strip('%'))
+                non_white_count += 1
+
+        # Safely handle division by zero when calculating averages
         average_data = {
-            "population": total_population // count,
-            "households": total_households // count,
-            "unemployment_rate": round(total_unemployment_rate / count, 4),  # Round to 4 decimal places
-            "avg_household_income": total_avg_income // count,
-            "working": round(total_working // count, 2),  # Round to 2 decimal places
-            "unemployed": round(total_unemployed // count, 2),  # Round to 2 decimal places
-            "ab": round(total_ab_grade // count, 2),  # Round to 2 decimal places
-            "c1/c2": round(total_c2_grade // count, 2),  # Round to 2 decimal places
-            "de": round(total_de_grade // count, 2),  # Round to 2 decimal places
-            "white": round(total_white // count, 2),  # Round to 2 decimal places
-            "non-white": round(total_non_white // count, 2)  # Round to 2 decimal places
+            "population": total_population // population_count if population_count > 0 else 0,
+            "households": total_households // household_count if household_count > 0 else 0,
+            "unemployment_rate": round(total_unemployment_rate / unemployment_rate_count, 4) if unemployment_rate_count > 0 else 0,
+            "avg_household_income": total_avg_income // avg_income_count if avg_income_count > 0 else 0,
+            "working": round(total_working // working_count, 2) if working_count > 0 else 0,
+            "unemployed": round(total_unemployed // unemployed_count, 2) if unemployed_count > 0 else 0,
+            "ab": round(total_ab_grade // ab_grade_count, 2) if ab_grade_count > 0 else 0,
+            "c1/c2": round(total_c2_grade // c2_grade_count, 2) if c2_grade_count > 0 else 0,
+            "de": round(total_de_grade // de_grade_count, 2) if de_grade_count > 0 else 0,
+            "white": round(total_white // white_count, 2) if white_count > 0 else 0,
+            "non-white": round(total_non_white // non_white_count, 2) if non_white_count > 0 else 0
         }
-        
+
         # Convert percentages to decimal format
-        average_data["working"] /= 100
-        average_data["unemployed"] /= 100
-        average_data["ab"] /= 100
-        average_data["c1/c2"] /= 100
-        average_data["de"] /= 100
-        average_data["white"] /= 100
-        average_data["non-white"] /= 100
+        if working_count > 0:
+            average_data["working"] /= 100
+        if unemployed_count > 0:
+            average_data["unemployed"] /= 100
+        if ab_grade_count > 0:
+            average_data["ab"] /= 100
+        if c2_grade_count > 0:
+            average_data["c1/c2"] /= 100
+        if de_grade_count > 0:
+            average_data["de"] /= 100
+        if white_count > 0:
+            average_data["white"] /= 100
+        if non_white_count > 0:
+            average_data["non-white"] /= 100
 
         return average_data
+
+
+# class DemographicsCalculator:
+#     @staticmethod
+
+#     def average_demographics(demo_list):
+#         # Initialize cumulative sums and counts
+#         total_population = 0
+#         total_households = 0
+#         total_unemployment_rate = 0
+#         total_avg_income = 0
+#         total_working = 0
+#         total_unemployed = 0
+#         total_ab_grade = 0
+#         total_c2_grade = 0
+#         total_de_grade = 0
+#         total_white = 0
+#         total_non_white = 0
+        
+#         for demo in demo_list:
+#             # Convert values to proper types for calculations
+#             total_population += int(demo['total_population'].replace(',', ''))
+#             total_households += int(demo['households'].replace(',', ''))
+#             print("demo['unemployment_rate']",demo['unemployment_rate'])
+#             # Convert unemployment_rate to float and divide by 100
+#             total_unemployment_rate += float(demo['unemployment_rate'].strip('%')) / 100  
+#             # total_unemployment_rate += float(demo['unemployment_rate'].strip('%')) / 100 
+            
+#             # Convert avg_household_income to int for average calculation
+#             total_avg_income += int(demo['avg_household_income'].replace('£', '').replace(',', ''))
+            
+#             # Convert percentages for working, unemployed, ab, c1/c2, de, white, non-white to float and divide by 100
+#             total_working += int(demo['working'].strip('%'))  # Keep as percentage for average
+#             total_unemployed += int(demo['unemployed'].strip('%'))  # Keep as percentage for average
+#             total_ab_grade += int(demo['ab_grade'].strip('%'))  # Keep as percentage for average
+#             total_c2_grade += int(demo['c2_grade'].strip('%'))  # Keep as percentage for average
+#             total_de_grade += int(demo['de_grade'].strip('%'))  # Keep as percentage for average
+#             total_white += int(demo['white'].strip('%'))  # Keep as percentage for average
+#             total_non_white += int(demo['non_white'].strip('%'))  # Keep as percentage for average
+
+#         print("total_unemployment_rate:",total_unemployment_rate)
+#         count = len(demo_list)
+        
+#         # Calculate averages
+#         average_data = {
+#             "population": total_population // count,
+#             "households": total_households // count,
+#             "unemployment_rate": round(total_unemployment_rate / count, 4),  # Round to 4 decimal places
+#             "avg_household_income": total_avg_income // count,
+#             "working": round(total_working // count, 2),  # Round to 2 decimal places
+#             "unemployed": round(total_unemployed // count, 2),  # Round to 2 decimal places
+#             "ab": round(total_ab_grade // count, 2),  # Round to 2 decimal places
+#             "c1/c2": round(total_c2_grade // count, 2),  # Round to 2 decimal places
+#             "de": round(total_de_grade // count, 2),  # Round to 2 decimal places
+#             "white": round(total_white // count, 2),  # Round to 2 decimal places
+#             "non-white": round(total_non_white // count, 2)  # Round to 2 decimal places
+#         }
+        
+#         # Convert percentages to decimal format
+#         average_data["working"] /= 100
+#         average_data["unemployed"] /= 100
+#         average_data["ab"] /= 100
+#         average_data["c1/c2"] /= 100
+#         average_data["de"] /= 100
+#         average_data["white"] /= 100
+#         average_data["non-white"] /= 100
+
+#         return average_data
 
 
 
@@ -269,23 +394,31 @@ class WebScraper:
             outer_code = ''.join([char.upper() if char.isalpha() else char for char in outer_code])
             try:
                 url = f'https://www.postcodearea.co.uk/postaltowns/uxbridge/{outer_code}/'
+                print("_______________________________________________________")
+                print(url)
 
                 response = requests.get(url)
                 response.raise_for_status()  # Ensure we get a valid response
                 soup = BeautifulSoup(response.content, 'html.parser')
+                print("status_code",response.status_code)
 
                 demographics = DemographicsExtractor.extract_demographics(soup)
                 additional_data = DemographicsExtractor.extract_additional_data(soup)
 
                 combined_data = {**demographics, **additional_data}
+                
                 self.demographics_list.append(combined_data)
                 print("postcode", outer_code, "combined_data", combined_data)
             except Exception as e:
+                print("im in exception !!!!!!!!!")
                 print(e)
+
                 continue
 
         # Calculate average demographics
+        print("im here outside !!!!!!!!!!")
         final_average_data = DemographicsCalculator.average_demographics(self.demographics_list)
+        print(final_average_data)
         return final_average_data
 
 

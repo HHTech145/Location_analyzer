@@ -1,0 +1,14 @@
+# To ensure app dependencies are ported from your virtual environment/host machine into your container, run 'pip freeze > requirements.txt' in the terminal to overwrite this file
+uvicorn
+gunicorn
+bokeh
+openpyxl
+pandas
+pillow
+xgboost
+scikit-learn
+fastapi
+selenium
+beautifulsoup4
+requests
+webdriver_manager
