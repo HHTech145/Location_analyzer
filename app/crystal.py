@@ -40,7 +40,6 @@ class WebDriverHelper:
         self.driver.execute_script("document.body.style.zoom='20%'")
         time.sleep(2)  # Adjust as necessary
 
-
     def click_show_more_restaurants(self):
         """Clicks the 'Show more' button for restaurants if it exists."""
         try:
@@ -107,6 +106,59 @@ class WebDriverHelper:
         else:
             print("No pub list found.")
             return pd.DataFrame()
+        
+    def click_on_borough_button(self):
+        # /html/body/div[2]/div[2]/main/article/div[2]/div[3]/div/div[4]/div/div[1]/ul/li[2]/button
+        # """Clicks the 'Show more' button for restaurants if it exists."""
+        try:
+            borough_button = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[2]/main/article/div[2]/div[3]/div/div[4]/div/div[1]/ul/li[2]/button')
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", borough_button)
+            time.sleep(1)
+            borough_button.click()
+            time.sleep(2)
+        except Exception as e:
+            print("Could not find the 'Show more' button for restaurants:", e)
+
+    def get_occupation_data(self):
+        try:
+            occupation_text_div = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[2]/main/article/div[2]/div[3]/div/div[3]')
+            text_soup = BeautifulSoup(occupation_text_div.get_attribute('innerHTML'), 'html.parser')
+
+
+            # Extract the paragraph text with class 'hv_a'
+            location_text = text_soup.find('p', class_='hv_a').get_text(strip=True)  
+
+            show_more_div = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[2]/main/article/div[2]/div[3]/div/div[4]')
+            soup = BeautifulSoup(show_more_div.get_attribute('innerHTML'), 'html.parser')
+
+            # Find the div that contains the occupations section
+            occupation_section = soup.find('div', class_='ha_e')
+            if occupation_section:
+                occupations = []
+                
+                # Find all the occupation rows and borough values
+                occupation_rows = occupation_section.find_all('div', class_='ha_h')
+                for row in occupation_rows:
+                    occupation_name = row.find('span', class_='hw_b').get_text(strip=True)
+                    borough_value = row.find_all('span')[-1].get_text(strip=True)  # Get the value for the Borough
+
+                    occupations.append({
+                        'Occupation': occupation_name,
+                        'Percentage': borough_value
+                    })
+
+                # Convert to DataFrame for easy analysis
+                df_occupations = pd.DataFrame(occupations)
+                print("df_occupations_----_____________________________________:",df_occupations,"\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                return df_occupations,location_text
+            else:
+                print("No occupations section found.")
+                return pd.DataFrame()
+
+        except Exception as e:
+            print(f"Error occurred while extracting occupations: {e}")
+            return pd.DataFrame()
+        
 
     def store_data_as_json(self, postcode, restaurant_data, pub_data,demo_df):
         """Stores restaurant and pub data in JSON format against the given postcode."""
@@ -126,8 +178,8 @@ class WebDriverHelper:
             json.dump(data, json_file, indent=4)
         
         print(f"Data saved to {filename}")
+   
 
-        
     # Function to split the restaurant name from the distance
     def split_name_distance(self,row):
         # Use regex to find the first occurrence of digits in the string
@@ -173,6 +225,193 @@ class Crystal:
         print(self.df_demographic)
 
         return self.df_demographic
+
+
+
+# class OccupationReport:
+#     def __init__(self, url):
+#         self.url = url
+#         self.soup = None
+#         self.fetch_data()
+
+#     def fetch_data(self):
+#         try:
+#             response = requests.get(self.url)
+#             response.raise_for_status()  # Ensure the request was successful
+#             self.soup = BeautifulSoup(response.text, 'html.parser')
+#         except requests.exceptions.RequestException as e:
+#             print(f"Error occurred while fetching the webpage: {e}")
+
+#     def get_borough_occupations(self):
+#         if not self.soup:
+#             return pd.DataFrame()
+
+#         try:
+#             # Find the div that contains the occupations section
+#             occupation_section = self.soup.find('div', class_='ha_e')
+#             if occupation_section:
+#                 occupations = []
+                
+#                 # Find all the occupation rows and borough values
+#                 occupation_rows = occupation_section.find_all('div', class_='ha_h')
+#                 for row in occupation_rows:
+#                     occupation_name = row.find('span', class_='hw_b').get_text(strip=True)
+#                     borough_value = row.find_all('span')[-1].get_text(strip=True)  # Get the value for the Borough
+
+#                     occupations.append({
+#                         'Occupation': occupation_name,
+#                         'Borough Value': borough_value
+#                     })
+
+#                 # Convert to DataFrame for easy analysis
+#                 df_occupations = pd.DataFrame(occupations)
+#                 print("df_occupations_----_____________________________________:",df_occupations,"\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+#                 return df_occupations
+#             else:
+#                 print("No occupations section found.")
+#                 return pd.DataFrame()
+
+#         except Exception as e:
+#             print(f"Error occurred while extracting occupations: {e}")
+#             return pd.DataFrame()
+
+
+class HouseholdIncomeScraper:
+    def __init__(self, url):
+        self.url = url
+        self.soup = None
+    
+    # Method to fetch and parse HTML
+    def fetch_page(self):
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()  # Check if the request was successful
+            self.soup = BeautifulSoup(response.text, 'html.parser')
+        except requests.exceptions.RequestException as e:
+            print(f"Error occurred while fetching the webpage: {e}")
+            self.soup = None
+    
+    def separate_local(self,text):
+        # Use regex to find a pattern of a word followed by 'local'
+        # Use regex to find a word followed by 'local'
+        updated_text = re.sub(r'(\w+)(local)', r'\1 \2', text)
+        return updated_text
+    # Method to scrape neighbourhood, borough, and London income data
+    def get_neighbourhood_income(self):
+        if not self.soup:
+            return pd.DataFrame()
+
+        try:
+            income_section = self.soup.find('div', class_='ha_e')
+            if income_section:
+                # Extract Neighbourhood income and value
+                neighbourhood_data = income_section.find('div', class_='ha_n')
+                neighbourhood_name = neighbourhood_data.find('span', class_='hw_b').get_text(strip=True)
+                neighbourhood_value = neighbourhood_data.find_all('span')[-1].get_text(strip=True)
+
+                # Extract Kingston upon Thames borough income and value
+                borough_data = income_section.find_all('div', class_='ha_h')[1]
+                borough_name = borough_data.find('span', class_='hw_b').get_text(strip=True)
+                print(borough_name)
+                borough_name=self.separate_local(borough_name)
+                print("-----------------------------London Name:",borough_name)
+                borough_value = borough_data.find_all('span')[-1].get_text(strip=True)
+
+                # Extract London income and value
+                london_data = income_section.find_all('div', class_='ha_h')[2]
+                london_name = london_data.find('span', class_='hw_b').get_text(strip=True)
+                print("-----------------------------London Name:",london_name)
+                london_value = london_data.find_all('span')[-1].get_text(strip=True)
+
+                # Extract comparison text
+                comparison_section = self.soup.find('p', class_='hv_a')
+                comparison_text = comparison_section.get_text(strip=True) if comparison_section else "No comparison data found"
+
+                # Prepare data
+                data = {
+                    'Area': [neighbourhood_name, borough_name, london_name, 'Comparison Text'],
+                    'Income': [neighbourhood_value, borough_value, london_value, comparison_text]
+                }
+                df_neighbourhood_income = pd.DataFrame(data)
+                return df_neighbourhood_income
+            else:
+                print("No income section found.")
+                return pd.DataFrame()
+        except Exception as e:
+            print(f"Error occurred while extracting neighbourhood income: {e}")
+            return pd.DataFrame()
+
+    # Method to scrape household income and rating
+    def get_household_income(self):
+        if not self.soup:
+            return pd.DataFrame()
+
+        try:
+            # Search for the section that contains the household income information, flexible for class 'gd_a gd_f' or 'gd_a gd_e'
+            income_estimate_section = self.soup.find('div', class_=['gd_a', 'gd_f', 'gd_e'])
+
+            if income_estimate_section:
+                # Extract the income estimate by looking for the span containing the relevant value
+                income_value_element = income_estimate_section.find('span', class_='f7_a')
+                income_value = income_value_element.get_text(strip=True) if income_value_element else "No income data found"
+
+                # Extract the income rating (if available)
+                income_rating_element = income_estimate_section.find('span', class_='hs_a')
+                income_rating = income_rating_element.get_text(strip=True) if income_rating_element else "No rating found"
+
+                # Prepare the data
+                data = {
+                    'income': income_value,
+                    'rating': income_rating
+                }
+
+                # Convert the data into a DataFrame
+                df_household_income = pd.DataFrame([data])
+                return df_household_income
+            else:
+                print("No household income section found.")
+                return pd.DataFrame()
+
+        except Exception as e:
+            print(f"Error occurred while extracting household income: {e}")
+            return pd.DataFrame()
+
+    def get_address(self):
+        if not self.soup:
+            return ""
+
+        try:
+            # Find the navigation section that contains the address
+            address_nav = self.soup.find('nav', class_='h4_a c6_a')
+            if address_nav:
+                # Extract the address components from the list items
+                address_components = [li.get_text(strip=True) for li in address_nav.find_all('li')]
+                full_address = ', '.join(address_components)  # Join components with a comma
+                return full_address
+            else:
+                print("No address navigation found.")
+                return ""
+
+        except Exception as e:
+            print(f"Error occurred while extracting address: {e}")
+            return ""
+        
+    # Method to call both scraping methods and combine results
+    def scrape_income_data(self):
+        self.fetch_page()
+
+        if self.soup:
+            df_neighbourhood_income = self.get_neighbourhood_income()
+            df_household_income = self.get_household_income()
+            full_address = self.get_address()
+            print("##################################################################",full_address)
+            # Combine the DataFrames    
+            # combined_df = pd.concat([df_neighbourhood_income, df_household_income], ignore_index=True)
+            return df_household_income,df_neighbourhood_income,full_address
+        else:
+            print("Soup not available. Failed to fetch the page.")
+            return pd.DataFrame()
+
 
 
 

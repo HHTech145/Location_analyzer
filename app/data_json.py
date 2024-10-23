@@ -39,7 +39,9 @@ class JsonDataHandler:
                 'crystal': {
                     'ethnicity': {},
                     'restaurants': {},
-                    'pubs': {}
+                    'pubs': {},
+                    'income':{},
+                    'occupation':{}
                 }
             }
         
@@ -76,11 +78,13 @@ class JsonDataHandler:
         # Save changes to JSON
         self.save_json()
 
-    def add_crystal_data(self, postcode, ethnicity_data, restaurants, pubs):
+    def add_crystal_data(self, postcode, ethnicity_data, restaurants, pubs, df_household_income, df_neighbourhood_income, full_address, df_occupation, occupation_location_text):
         try:
+            print("______________________________________________in add crsyal json _____________________________________________________________________________________")
             # Ensure postcode exists and strip any extra whitespace
             postcode = postcode.strip()
-            print("*********************************************************_)___________________________________________________",postcode,self.postcodes[postcode])
+
+            # Ensure the postcode entry exists
             if postcode not in self.postcodes:
                 self.add_postcode_info(postcode, None, None)
 
@@ -89,11 +93,21 @@ class JsonDataHandler:
                 self.postcodes[postcode]['crystal'] = {
                     'ethnicity': {},
                     'restaurants': {},
-                    'pubs': {}
+                    'pubs': {},
+                    'income': {},      # Initialize income here
+                    'occupation': {}   # Initialize occupation here
                 }
 
             # Access crystal data directly
             current_crystal_data = self.postcodes[postcode]['crystal']
+
+            # Initialize the 'income' key if it doesn't exist
+            if 'income' not in current_crystal_data:
+                current_crystal_data['income'] = {}
+
+            # Initialize the 'occupation' key if it doesn't exist
+            if 'occupation' not in current_crystal_data:
+                current_crystal_data['occupation'] = {}
 
             # Add ethnicity data
             if ethnicity_data is not None and not ethnicity_data.empty:
@@ -109,13 +123,36 @@ class JsonDataHandler:
             if pubs is not None and not pubs.empty:
                 pub_dict = {row['Pub']: row['Distance'] for _, row in pubs.iterrows()}
                 current_crystal_data['pubs'].update(pub_dict)
+
+            # Add household income data
+            print("df household income ",df_household_income)
+            if df_household_income is not None and not df_household_income.empty:
+                current_crystal_data['income']['average_income']=df_household_income['income'][0]
+                current_crystal_data['income']['rating']=df_household_income['rating'][0]
+                # income_dict = {row['income']: row['rating'] for _, row in df_household_income.iterrows()}
+                # current_crystal_data['income'].update(income_dict)
+
+            # Add neighborhood income data
+            if df_neighbourhood_income is not None and not df_neighbourhood_income.empty:
+                neighbourhood_income_dict = {row['Area']: row['Income'] for _, row in df_neighbourhood_income.iterrows()}
+                current_crystal_data['income'].update(neighbourhood_income_dict)
+
+            # Add occupation data
+            if df_occupation is not None and not df_occupation.empty:
+                occupation_dict = {row['Occupation']: row['Percentage'] for _, row in df_occupation.iterrows()}
+                current_crystal_data['occupation'].update(occupation_dict)
+                current_crystal_data['occupation']['occupation_location_text'] = occupation_location_text
+
+            self.postcodes[postcode]['address'] = full_address
+
             # Save changes to JSON
+            print(self.postcodes[postcode])
+
             self.save_json()
 
         except Exception as e:
             print(f"Error occurred while adding crystal data for postcode {postcode}: {str(e)}")
             print(traceback.format_exc())  # Log the traceback for debugging
-
 
 
 

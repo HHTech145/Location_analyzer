@@ -11,8 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from free_map_tool import WebScraper
 from prediction import PredictionModel
 from plot import PredictionsPlotter
-from crystal import Crystal,WebDriverHelper
-
+from crystal import Crystal,WebDriverHelper,HouseholdIncomeScraper
 #json class 
 from data_json import JsonDataHandler
 
@@ -22,7 +21,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
-
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn 
 
 # Load the environment variables from .env file
@@ -30,6 +29,25 @@ load_dotenv()
 
 # Initialize FastAPI
 app = FastAPI()
+
+#headers
+# CORS middleware (adjust settings as per your security requirements)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust based on your security needs
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Middleware to add the ngrok-skip-browser-warning header
+# @app.middleware("http")
+# async def add_ngrok_skip_header(request, call_next):
+#     print("_____________________ skip browser warning ngrok _____________________________")
+#     response = await call_next(request)
+#     response.headers["ngrok-skip-browser-warning"] = "true"
+#     return response
+
 
 # for parallel processing 
 from concurrent.futures import ThreadPoolExecutor
@@ -180,7 +198,33 @@ def fetch_amenities(postcode,url,demo_df):
     # web_helper.store_data_as_json(postcode=postcode,restaurant_data=df_restaurants,pub_data=df_pubs,demo_df=demo_df)
 
 
-def run_plot(demo_df,df_restaurants,df_pubs,postcode):
+def fetch_affluence(url):
+        # Example usage:
+    # url = 'https://crystalroof.co.uk/report/postcode/IP265NP/affluence'  # Replace with the actual URL
+
+    # Create an instance of the scraper
+    scraper = HouseholdIncomeScraper(url)
+
+    # Call the scrape_income_data method to get the combined DataFrame
+    df_household_income,df_neighbourhood_income ,full_address= scraper.scrape_income_data()
+    print(df_household_income)
+    return df_household_income,df_neighbourhood_income,full_address
+
+def fetch_occupation(url):
+    try:
+        # Example usage
+        # url = 'https://example.com'  # Replace with the actual URL
+        web_helper = WebDriverHelper(url)
+        web_helper.load_page()
+        web_helper.click_on_borough_button()
+
+        df_occupations,location_text = web_helper.get_occupation_data()
+        print(df_occupations,location_text) 
+        return df_occupations,location_text   
+    except Exception as e:
+        print(e)
+
+def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,postcode):
     # postcode_info_path =os.path.join(os.path.dirname(__file__), os.environ.get('demographic_file_path'))
     postcode_info_path = os.environ.get('demographic_file_path') #'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
     folder_path = os.environ.get('prediction_results_path') #'results'
@@ -190,7 +234,7 @@ def run_plot(demo_df,df_restaurants,df_pubs,postcode):
     # output_file_name = 'predictions_plot_with_postcode_info_radius_sec.html'
 
     plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
-    plotter.run(demo_df,df_restaurants,df_pubs,postcode)
+    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode)
 
 
 # def validate_uk_postcode(postcode):
@@ -203,9 +247,13 @@ def run_plot(demo_df,df_restaurants,df_pubs,postcode):
 #     # Return True if the postcode is valid, otherwise False
 #     return bool(match)
 
+
+
+
 # Define the endpoint
 @app.get("/process_postcode/")
 async def process_postcode(postcode: str):
+    # response=add_ngrok_skip_header()
     postcode = postcode
     print("in postcode ")
     json_file = 'postcode_data.json'
@@ -249,13 +297,22 @@ async def process_postcode(postcode: str):
         df_restaurants, df_pubs = await loop.run_in_executor(executor, fetch_amenities, postcode, url_amenities, demo_df)
         # handler.add_nearby_restaurants(postcode, df_restaurants)
         # handler.add_nearby_pubs(postcode, df_pubs)
-        handler.add_crystal_data(postcode, ethnicity_data=demo_df, restaurants=df_restaurants, pubs=df_pubs)
+        # handler.add_crystal_data(postcode, ethnicity_data=demo_df, restaurants=df_restaurants, pubs=df_pubs)
         # print(handler.to_json())
+        url_affluence= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence'
+        df_household_income,df_neighbourhood_income,full_address = await loop.run_in_executor(executor, fetch_affluence, url_affluence)
+        print(df_household_income,df_neighbourhood_income)
 
-
+        ###### occupation #########################
+        url_occupation= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
+        df_occcupation,occupation_location_text = await loop.run_in_executor(executor, fetch_occupation, url_occupation)
+        print(df_occcupation,occupation_location_text)
+        #Save crystal data to json 
+        handler.add_crystal_data(postcode, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text)
+        print( "________________________________in main _______________________________________")
 
         # Generate plot
-        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs, postcode)
+        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode)
 
         # Return file URL
         file_url = f"https://decent-probably-lacewing.ngrok-free.app/files/{postcode}.html"

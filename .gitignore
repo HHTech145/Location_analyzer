@@ -12,3 +12,4 @@ Dockerfile
 .dockerignore
 *.vscode
 *__pycache__
+*.yml
