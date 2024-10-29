@@ -52,6 +52,7 @@ class PredictionModel:
 
             # Run predictions
             predictions = self.loaded_model.predict(new_df)
+            print("predictions________________________________________",predictions)
 
             # Store the results
             for pred in predictions:
@@ -67,12 +68,13 @@ class PredictionModel:
         # Create a DataFrame from predictions
         predictions_df = pd.DataFrame(predictions_list)
 
-        average=sum(predictions) / len(predictions)
+        # average=sum(predictions_df['Prediction']) / len(predictions_df['Prediction'])
         # Create output path using postcode
         output_path = f"{os.environ.get('prediction_results_path')}/{self.postcode}.xlsx"
         predictions_df.to_excel(output_path, index=False)
         print(f"Predictions saved to {output_path}")
-        return average
+        print(predictions_df['Prediction'].min(),predictions_df['Prediction'].mean(),predictions_df['Prediction'].max())
+        return predictions_df['Prediction'].min(),predictions_df['Prediction'].mean(),predictions_df['Prediction'].max()
 
 # Usage
 if __name__ == "__main__":

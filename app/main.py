@@ -1,12 +1,14 @@
 import pandas as pd
 import pickle
 from datetime import datetime, timedelta
-
+import traceback
 import os, sys 
 # Add the app directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-
+#import database class 
+from database.database_handler import PostcodeDataHandler
+#############
 
 from free_map_tool import WebScraper
 from prediction import PredictionModel
@@ -115,37 +117,76 @@ def check_data(postcode,file_path,sheet_name):
 
     # Create a mask for existing postcodes
     # existing_postcodes = df['postcode'].values  # Replace 'postcode' with the actual column name
-    exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
+    # exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
 
-    new_df=pd.DataFrame()
-    # Append only new rows
-    if exists:
-        new_df=df[df['postcode']==postcode]
-        return new_df
-    else:
-        for i in range(5):
-            try:
-                # Attempt to scrape data for the postcode
-                df = start_scraper(postcode)
-                print(df)
-                
-                # Add the postcode to the dataframe
-                df['postcode'] = postcode
-                
-                # Load and update Excel with the new dataframe
-                load_and_update_excel(df, file_path, sheet_name)
-                
-                # If df is not empty, return it and break the loop
-                if not df.empty:
-                    return df  # Exit after a successful run
+    # new_df=pd.DataFrame()
+    # # Append only new rows
+    # if exists:
+    #     new_df=df[df['postcode']==postcode]
+    #     return new_df
+    # else:
+    for i in range(5):
+        try:
+            # Attempt to scrape data for the postcode
+            df = start_scraper(postcode)
+            print(df)
+            
+            # Add the postcode to the dataframe
+            df['postcode'] = postcode
+            
+            # Load and update Excel with the new dataframe
+            load_and_update_excel(df, file_path, sheet_name)
+            
+            # If df is not empty, return it and break the loop
+            if not df.empty:
+                return df  # Exit after a successful run
 
-            except Exception as e:
-                # Log the exception
-                print(f"Attempt {i+1}: Exception occurred - {e}")
+        except Exception as e:
+            # Log the exception
+            print(f"Attempt {i+1}: Exception occurred - {e}")
+            
+            # If it's the last attempt, re-raise the exception
+            if i == 4:
+                raise
+# def check_data(postcode,file_path,sheet_name):
+#     print(os.getcwd())
+#     print("in check data ",file_path)
+#     df = pd.read_excel(file_path, sheet_name=sheet_name)
+#     print(df)
+
+#     # Create a mask for existing postcodes
+#     # existing_postcodes = df['postcode'].values  # Replace 'postcode' with the actual column name
+#     exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
+
+#     new_df=pd.DataFrame()
+#     # Append only new rows
+#     if exists:
+#         new_df=df[df['postcode']==postcode]
+#         return new_df
+#     else:
+#         for i in range(5):
+#             try:
+#                 # Attempt to scrape data for the postcode
+#                 df = start_scraper(postcode)
+#                 print(df)
                 
-                # If it's the last attempt, re-raise the exception
-                if i == 4:
-                    raise
+#                 # Add the postcode to the dataframe
+#                 df['postcode'] = postcode
+                
+#                 # Load and update Excel with the new dataframe
+#                 load_and_update_excel(df, file_path, sheet_name)
+                
+#                 # If df is not empty, return it and break the loop
+#                 if not df.empty:
+#                     return df  # Exit after a successful run
+
+#             except Exception as e:
+#                 # Log the exception
+#                 print(f"Attempt {i+1}: Exception occurred - {e}")
+                
+#                 # If it's the last attempt, re-raise the exception
+#                 if i == 4:
+#                     raise
 
     
 def run_prediction(start_date,end_date,df,postcode):
@@ -155,12 +196,12 @@ def run_prediction(start_date,end_date,df,postcode):
     df['Month']=9
 
     model = PredictionModel(
-    model_path = os.path.join(os.path.dirname(__file__), 'models','xgboost_model_without_crystal_ver_1.pkl'),
+    model_path = os.path.join(os.path.dirname(__file__), 'models','xgboost_model_without_crystal_radius_1.61.pkl'), 
     average_df=df,
     postcode=postcode
         )
-    average_prediction=model.generate_predictions(start_date,end_date)
-    return average_prediction
+    min_prediction,average_prediction,max_prediction=model.generate_predictions(start_date,end_date)
+    return min_prediction,average_prediction,max_prediction
 
 #Crystal Roof fetching
 
@@ -237,6 +278,25 @@ def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood
     plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode)
 
 
+
+def save_data_to_database(postcode):
+    # Database configuration
+    db_config = {
+        "host": "localhost",
+        "user": "htech_ai",
+        "password": "Htech786##",
+        "database": "test_db"  # Assuming you have a database to connect to
+    }
+
+    # Path to your JSON file
+    json_file_path = "D:/work/automation/free_map_tools/final/Location_analyzer/app/postcode_data.json"
+
+    # Example usage
+    postcode_handler = PostcodeDataHandler(db_config, json_file_path)
+    # postcode = "AL10 9AY"  # Replace with the actual postcode you want to search
+    postcode_handler.insert_into_database(postcode)
+    postcode_handler.close_database()    
+
 # def validate_uk_postcode(postcode):
 #     # Define the regex pattern for UK postcodes
 #     pattern = r"^(GIR 0AA|(?:[A-PR-UWYZ][A-HK-Y0-9]?[0-9A-HJKS-UW]?[0-9]? ?[0-9][ABD-HJLNP-UW-Z]{2}))$"
@@ -280,12 +340,12 @@ async def process_postcode(postcode: str):
         df = await loop.run_in_executor(executor, check_data, postcode, file_path, sheet_name)
         print("__________________________________))))))))))))))))))))__________________________________",df)
         
-        start_date = "01/01/2024"
-        end_date = "12/28/2024"
-        average_prediction=await loop.run_in_executor(executor, run_prediction, start_date, end_date, df, postcode)
+        start_date = "05/01/2023"
+        end_date = "05/28/2024"
+        min_prediction,average_prediction,max_prediction=await loop.run_in_executor(executor, run_prediction, start_date, end_date, df, postcode)
         #update json 
         print("___________ average prediction",average_prediction,type(average_prediction))
-        handler.add_postcode_info(postcode, radius=1.61, prediction=average_prediction)
+        handler.add_postcode_info(postcode=postcode, radius=1.61, min_prediction=min_prediction,average_prediction=average_prediction,max_prediction=max_prediction)
         handler.add_demographics(postcode,df)
         # Fetch data from Crystal
         postcode_crystal = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
@@ -314,6 +374,11 @@ async def process_postcode(postcode: str):
         # Generate plot
         await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode)
 
+        # save data 
+        save_data_to_database(postcode=postcode)
+        ####################
+
+
         # Return file URL
         file_url = f"https://decent-probably-lacewing.ngrok-free.app/files/{postcode}.html"
         return file_url
@@ -322,7 +387,33 @@ async def process_postcode(postcode: str):
             # return(f"{postcode} is not a valid UK postcode.")        
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(traceback.format_exc()))
+
+
+# Define the endpoint for average prediction from database 
+@app.get("/get_average_prediction/")
+async def get_average_prediction(postcode: str):
+    postcode=postcode.upper()
+    print("____in get_average_prediction__")
+    # Database configuration
+    db_config = {
+        "host": "localhost",
+        "user": "htech_ai",
+        "password": "Htech786##",
+        "database": "test_db"  # Assuming you have a database to connect to
+    }
+
+    # Path to your JSON file
+    json_file_path = "D:/work/automation/free_map_tools/final/Location_analyzer/app/postcode_data.json"
+
+    # Example usage
+    postcode_handler = PostcodeDataHandler(db_config, json_file_path)
+
+    json_data=postcode_handler.get_average_prediction_from_db(postcode=postcode)
+    print(json_data)
+    return json_data
+    
+
 
 # Define the endpoint
 # @app.get("/process_postcode/")

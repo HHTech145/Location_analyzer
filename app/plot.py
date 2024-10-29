@@ -4,7 +4,7 @@ from bokeh.plotting import figure, save, output_file, show
 from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, CustomJS, Div, DataTable, TableColumn
 from bokeh.layouts import column, row
 from bokeh.plotting import curdoc
-
+from bokeh.models import HTMLTemplateFormatter
 class PredictionsPlotter:
     def __init__(self, postcode_info_path, folder_path, output_file_name):
         self.postcode_info_path = postcode_info_path
@@ -71,6 +71,44 @@ class PredictionsPlotter:
 
         self.combined_df=self.combined_df[self.combined_df['Postcode']==postcode]
         print(self.combined_df[['Postcode', 'Prediction', 'Average Prediction']].describe())
+        print(self.combined_df['Prediction'].min(),self.combined_df['Prediction'].mean(),self.combined_df['Prediction'].max())
+        print("_____________________________mean avg ________________________________________________________________________")
+
+    def get_html_formatter(self,my_col):
+        template = """
+            <div style="background:<%= 
+                (function colorfromint(){
+                    if(result_col=='White British'){
+                        return('#ec3219')}
+                    if(result_col=='Other White'){
+                        return('#ec3219')}
+                    if(result_col=='Pakistani'){
+                        return('#008000')} 
+                    if(result_col=='Indian'){
+                        return('#f77000')} 
+                    if(result_col=='Aged 20 to 39'){
+                        return('#FFD700')}                                            
+                    }()) %>;"> 
+            <%= value %>
+            </div>
+        """.replace('result_col',my_col)
+        
+        return HTMLTemplateFormatter(template=template)
+    
+    def get_html_formatter_occupation(self,my_col):
+        template = """
+            <div style="background:<%= 
+                (function colorfromint(){
+                    if(result_col=='Full-time students'){
+                        return('#FF7F50')}                                            
+                    }()) %>;"> 
+            <%= value %>
+            </div>
+        """.replace('result_col',my_col)
+        
+        return HTMLTemplateFormatter(template=template)
+
+
 
     def create_plot(self,demographics_df,restaurants_df,pubs_df,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text):
         print("in plot ______________________________________________________")
@@ -145,7 +183,7 @@ class PredictionsPlotter:
 
         # Defining columns for the Demographics table
         demographics_columns = [
-            TableColumn(field="Demographics", title="Demographics"),
+            TableColumn(field="Demographics", title="Demographics",formatter=self.get_html_formatter('Demographics')),
             TableColumn(field="Percentage", title="Percentage")
         ]
         demographics_table = DataTable(source=demographics_source, columns=demographics_columns, width=800, height=500)
@@ -174,10 +212,10 @@ class PredictionsPlotter:
 
         # Defining columns for Occupation Table 
         occupation_columns = [
-            TableColumn(field="Occupation", title="Occupation"),
+            TableColumn(field="Occupation", title="Occupation",formatter=self.get_html_formatter_occupation('Occupation')),
             TableColumn(field="Percentage", title="Percentage")
         ]
-        occupation_table = DataTable(source=occupation_source, columns=occupation_columns, width=800, height=400)        
+        occupation_table = DataTable(source=occupation_source, columns=occupation_columns, width=800, height=200)        
 
         # last_row = df_neighbourhood_income.iloc[-1]
         # df_neighbourhood_income = df_neighbourhood_income.drop(df_neighbourhood_income.index[-1])
@@ -208,10 +246,10 @@ class PredictionsPlotter:
             
             text=f"""
             <h1>Occupation section</h1>
-            <div style="border: 1px solid #ccc; border-radius: 6px; padding: 15px; background-color: Crimson; color: black;"> 
+            <div style="border: 1px solid #ccc; border-radius: 6px; padding: 15px; background-color: PaleVioletRed; color: black;"> 
                 <p style="margin: 0; font-weight: bold;">Occupation</p>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                    <p style="margin: 0; font-size: 16px; font-weight: bold;">{occupation_location_text}</p>
+                    <p style="margin: 0; font-size: 18px; ">{occupation_location_text}</p>
                 </div>
             </div>
             """,
@@ -228,7 +266,7 @@ class PredictionsPlotter:
         parts = [part.strip() for part in full_address.split(',')]
 
         # Further split the postal code
-        postal_code_parts = parts[5].split()
+        postal_code_parts = parts[-1].split()
         postcode_part=postal_code_parts[0]+"+"+postal_code_parts[1]
 
         # Rearrange the parts

@@ -26,7 +26,7 @@ class JsonDataHandler:
             json.dump(self.postcodes, f, indent=4)
 
     # Add a new postcode or update existing postcode data
-    def add_postcode_info(self, postcode, radius=None, prediction=None):
+    def add_postcode_info(self, postcode, radius=None,min_prediction=None,average_prediction=None,max_prediction=None):
         # Remove leading/trailing spaces from postcode for uniformity
         postcode = postcode.strip()
         
@@ -35,6 +35,8 @@ class JsonDataHandler:
             self.postcodes[postcode] = {
                 'radius': None,  # Single value, not a list
                 'prediction': None,  # Single value, not a list
+                'min_prediction':None,
+                'max_preidiction':None,
                 'demographics': {},
                 'crystal': {
                     'ethnicity': {},
@@ -49,11 +51,16 @@ class JsonDataHandler:
         if radius is not None:
             self.postcodes[postcode]['radius'] = radius
         
-        if prediction is not None:
-            self.postcodes[postcode]['prediction'] = prediction
-        
+        if min_prediction is not None:
+            self.postcodes[postcode]['min_prediction'] = min_prediction
+        if average_prediction is not None:
+            self.postcodes[postcode]['prediction'] = average_prediction
+        if max_prediction is not None:
+            self.postcodes[postcode]['max_preidiction'] = max_prediction        
         # Save changes to JSON
+        print(min_prediction,average_prediction,max_prediction)
         self.save_json()
+        print(self.postcodes[postcode])
 
     # Add demographic data by converting pandas Series to Python types
     def add_demographics(self, postcode, df):
