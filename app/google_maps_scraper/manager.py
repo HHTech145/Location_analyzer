@@ -55,8 +55,8 @@ import os
 import pandas as pd
 
 class XLSXHandler:
-    def __init__(self):
-        self.folder_path = "D:/work/automation/free_map_tools/final/Location_analyzer/app/output"
+    def __init__(self,folder_path):
+        self.folder_path = folder_path #"D:/work/automation/free_map_tools/final/Location_analyzer/app/output"
 
     @staticmethod
     def get_latest_csv_file(directory):

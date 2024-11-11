@@ -375,7 +375,7 @@ def fetch_transport(url):
 
 
 
-def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode):
+def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,postcode):
     # postcode_info_path =os.path.join(os.path.dirname(__file__), os.environ.get('demographic_file_path'))
     postcode_info_path = os.environ.get('demographic_file_path') #'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
     folder_path = os.environ.get('prediction_results_path') #'results'
@@ -386,7 +386,7 @@ def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood
 
     plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
     
-    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode)
+    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,postcode)
 
 
 
@@ -551,6 +551,7 @@ async def process_postcode(postcode: str):
 
                 # df_universities=XLSXHandler.laod_xlsx(postcode)
 
+        
 
 
 
@@ -558,8 +559,7 @@ async def process_postcode(postcode: str):
 
 
 
-
-        df_universities = XLSXHandler().load_xlsx(postcode)
+        df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/output").load_xlsx(postcode)
         print(df_universities)
         # print(df_universities.head)
         if df_universities is not None:
@@ -582,8 +582,35 @@ async def process_postcode(postcode: str):
                 stderr=subprocess.PIPE,
                 text=True
             )
-            df_universities = XLSXHandler().load_xlsx(postcode)
+            df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/output").load_xlsx(postcode)
 
+        ################################## Tourists ###########################################################
+        df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)
+        print(df_tourists)
+        # print(df_tourists.head)
+        if df_tourists is not None:
+            df_tourists=df_tourists[['name','address','url','reviews_count']]
+            # return df_universities
+        else:
+
+            parts = [part.strip() for part in full_address.split(',')]
+            result = ', '.join(parts[-2:])
+
+            # Input parameters as strings
+            search_list = f"tourist places near {result}"
+            # total = 20  # Number of listings to scrape    
+            # The script you want to run
+            script_path = "google_maps_tourist.py"
+            # Run the subprocess with the virtual environment's Python interpreter
+            result = subprocess.run(
+                ['python', script_path, search_list],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)        
+        # df_tourits_places= 
+        ##############################################################################################################################################
 
 
 
@@ -634,7 +661,7 @@ async def process_postcode(postcode: str):
         print( "________________________________in main _______________________________________",full_address)
 
         # Generate plot
-        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode)
+        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,postcode)
 
         # save data 
         save_data_to_database(postcode=postcode)
