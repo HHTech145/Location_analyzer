@@ -16,7 +16,7 @@ from plot import PredictionsPlotter
 from crystal import Crystal,WebDriverHelper,HouseholdIncomeScraper
 #json class 
 from data_json import JsonDataHandler
-
+import json 
 ####
 import re 
 from dotenv import load_dotenv
@@ -26,6 +26,22 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn 
 
+#
+# for parallel processing 
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
+import nest_asyncio
+import subprocess
+
+import pandas as pd
+from io import StringIO
+
+
+nest_asyncio.apply()
+#Load Google maps scraper 
+from google_maps_scraper.manager import XLSXHandler
+
+from dataclasses import dataclass, asdict, field
 # Load the environment variables from .env file
 load_dotenv()
 
@@ -51,9 +67,6 @@ app.add_middleware(
 #     return response
 
 
-# for parallel processing 
-from concurrent.futures import ThreadPoolExecutor
-import asyncio
 
 executor = ThreadPoolExecutor()
 
@@ -109,45 +122,6 @@ def start_scraper(postcode):
     # handler.add_postcode_info(postcode, 1.61, 1000)
     return df
 
-def check_data(postcode,file_path,sheet_name):
-    print(os.getcwd())
-    print("in check data ",file_path)
-    df = pd.read_excel(file_path, sheet_name=sheet_name)
-    print(df)
-
-    # Create a mask for existing postcodes
-    # existing_postcodes = df['postcode'].values  # Replace 'postcode' with the actual column name
-    # exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
-
-    # new_df=pd.DataFrame()
-    # # Append only new rows
-    # if exists:
-    #     new_df=df[df['postcode']==postcode]
-    #     return new_df
-    # else:
-    for i in range(5):
-        try:
-            # Attempt to scrape data for the postcode
-            df = start_scraper(postcode)
-            print(df)
-            
-            # Add the postcode to the dataframe
-            df['postcode'] = postcode
-            
-            # Load and update Excel with the new dataframe
-            load_and_update_excel(df, file_path, sheet_name)
-            
-            # If df is not empty, return it and break the loop
-            if not df.empty:
-                return df  # Exit after a successful run
-
-        except Exception as e:
-            # Log the exception
-            print(f"Attempt {i+1}: Exception occurred - {e}")
-            
-            # If it's the last attempt, re-raise the exception
-            if i == 4:
-                raise
 # def check_data(postcode,file_path,sheet_name):
 #     print(os.getcwd())
 #     print("in check data ",file_path)
@@ -156,37 +130,76 @@ def check_data(postcode,file_path,sheet_name):
 
 #     # Create a mask for existing postcodes
 #     # existing_postcodes = df['postcode'].values  # Replace 'postcode' with the actual column name
-#     exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
+#     # exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
 
-#     new_df=pd.DataFrame()
-#     # Append only new rows
-#     if exists:
-#         new_df=df[df['postcode']==postcode]
-#         return new_df
-#     else:
-#         for i in range(5):
-#             try:
-#                 # Attempt to scrape data for the postcode
-#                 df = start_scraper(postcode)
-#                 print(df)
-                
-#                 # Add the postcode to the dataframe
-#                 df['postcode'] = postcode
-                
-#                 # Load and update Excel with the new dataframe
-#                 load_and_update_excel(df, file_path, sheet_name)
-                
-#                 # If df is not empty, return it and break the loop
-#                 if not df.empty:
-#                     return df  # Exit after a successful run
+#     # new_df=pd.DataFrame()
+#     # # Append only new rows
+#     # if exists:
+#     #     new_df=df[df['postcode']==postcode]
+#     #     return new_df
+#     # else:
+#     for i in range(5):
+#         try:
+#             # Attempt to scrape data for the postcode
+#             df = start_scraper(postcode)
+#             print(df)
+            
+#             # Add the postcode to the dataframe
+#             df['postcode'] = postcode
+            
+#             # Load and update Excel with the new dataframe
+#             load_and_update_excel(df, file_path, sheet_name)
+            
+#             # If df is not empty, return it and break the loop
+#             if not df.empty:
+#                 return df  # Exit after a successful run
 
-#             except Exception as e:
-#                 # Log the exception
-#                 print(f"Attempt {i+1}: Exception occurred - {e}")
+#         except Exception as e:
+#             # Log the exception
+#             print(f"Attempt {i+1}: Exception occurred - {e}")
+            
+#             # If it's the last attempt, re-raise the exception
+#             if i == 4:
+#                 raise
+def check_data(postcode,file_path,sheet_name):
+    print(os.getcwd())
+    print("in check data ",file_path)
+    df = pd.read_excel(file_path, sheet_name=sheet_name)
+    print(df)
+
+    # Create a mask for existing postcodes
+    # existing_postcodes = df['postcode'].values  # Replace 'postcode' with the actual column name
+    exists = df['postcode'].isin([postcode]).any()  # Keep only new postcodes
+
+    new_df=pd.DataFrame()
+    # Append only new rows
+    if exists:
+        new_df=df[df['postcode']==postcode]
+        return new_df
+    else:
+        for i in range(5):
+            try:
+                # Attempt to scrape data for the postcode
+                df = start_scraper(postcode)
+                print(df)
                 
-#                 # If it's the last attempt, re-raise the exception
-#                 if i == 4:
-#                     raise
+                # Add the postcode to the dataframe
+                df['postcode'] = postcode
+                
+                # Load and update Excel with the new dataframe
+                load_and_update_excel(df, file_path, sheet_name)
+                
+                # If df is not empty, return it and break the loop
+                if not df.empty:
+                    return df  # Exit after a successful run
+
+            except Exception as e:
+                # Log the exception
+                print(f"Attempt {i+1}: Exception occurred - {e}")
+                
+                # If it's the last attempt, re-raise the exception
+                if i == 4:
+                    raise
 
     
 def run_prediction(start_date,end_date,df,postcode):
@@ -265,7 +278,104 @@ def fetch_occupation(url):
     except Exception as e:
         print(e)
 
-def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,postcode):
+def fetch_transport(url):
+    try:
+        # Example usage
+        # url = 'https://example.com'  # Replace with the actual URL
+        web_helper = WebDriverHelper(url)
+        web_helper.load_page()
+
+        connectivity_df,stations_df = web_helper.get_transport_data()
+        print(connectivity_df,stations_df) 
+        return connectivity_df,stations_df   
+    except Exception as e:
+        print(e)
+
+
+# def fetch_unviersities_data(full_Address):
+    
+#     # Split the string by commas and remove any leading/trailing whitespace
+#     parts = [part.strip() for part in full_Address.split(',')]
+#     result = ', '.join(parts[-2:])
+
+#     # Input parameters as strings
+#     search_list = [f"Universisites near {result}"]
+#     total = 20  # Number of listings to scrape
+
+#     # Scrape business data
+#     business_list = GoogleMapsScraper.scrape(search_list, total)
+#     business_dicts = [asdict(business) for business in business_list.business_list]
+
+#     # Convert to DataFrame
+#     df = pd.DataFrame(business_dicts)
+
+#     # Save data to files
+#     business_list.save_to_excel("google_maps_data")
+
+#     univeristies_df= df['name','address','url']
+
+#     return univeristies_df
+#     # business_list.save_to_csv("google_maps_data")
+
+
+# def fetch_universities_data(address):
+#     # Split the string by commas and remove any leading/trailing whitespace
+#     parts = [part.strip() for part in address.split(',')]
+#     result = ', '.join(parts[-2:])
+
+#     # Input parameters as strings
+#     search_list = [f"Universisites near {result}"]
+#     total = 20  # Number of listings to scrape
+
+#     print("--------------------------in fetch unversities data ---------------------------------------------------------------------------------------")
+#     business_list=asyncio.run(GoogleMapsScraper.scrape(search_list, total))
+
+#     business_dicts = [asdict(business) for business in business_list.business_list]
+
+#     # Convert to DataFrame
+#     df = pd.DataFrame(business_dicts)
+
+#     # Save data to files
+#     # business_list.save_to_excel("google_maps_data")
+
+#     df_universities= df['name','address','url']
+#     return df_universities
+
+# Helper function to call fetch_universities_data
+
+
+# def fetch_universities_data(address):
+#     # Split the string by commas and remove any leading/trailing whitespace
+#     parts = [part.strip() for part in address.split(',')]
+#     result = ', '.join(parts[-2:])
+
+#     # Input parameters as strings
+#     search_list = [f"Universisites near {result}"]
+#     total = 20  # Number of listings to scrape
+
+#     # Run scraper.py in a subprocess and capture output
+#     result = subprocess.run(
+#         ["python", "google_maps.py", search_list],
+#         stdout=subprocess.PIPE,
+#         text=True
+#     )
+#     df_universities = pd.read_json(result.stdout)
+#     print(df_universities)
+#     print("------in fetch universities data------")
+    # business_list = GoogleMapsScraper.scrape(search_list, total)
+
+    # business_dicts = [asdict(business) for business in business_list.business_list]
+
+    # Convert to DataFrame
+    # df = pd.DataFrame(business_dicts)
+
+    # Select required columns
+    # df_universities = df[['name', 'address', 'url']]
+    # return df_universities
+
+
+
+def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode):
     # postcode_info_path =os.path.join(os.path.dirname(__file__), os.environ.get('demographic_file_path'))
     postcode_info_path = os.environ.get('demographic_file_path') #'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
     folder_path = os.environ.get('prediction_results_path') #'results'
@@ -275,7 +385,8 @@ def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood
     # output_file_name = 'predictions_plot_with_postcode_info_radius_sec.html'
 
     plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
-    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode)
+    
+    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode)
 
 
 
@@ -308,7 +419,36 @@ def save_data_to_database(postcode):
 #     return bool(match)
 
 
+def fetch_universities(full_address,postcode):
+    try:
+        # df_universities=XLSXHandler.laod_xlsx(postcode)
+        df_universities = XLSXHandler().load_xlsx(postcode)
+        print(df_universities)
+        # print(df_universities.head)
+        if not df_universities.empty:
+            df_universities=df_universities[['name','address','url']]
+            return df_universities
+        else:
 
+            parts = [part.strip() for part in full_address.split(',')]
+            result = ', '.join(parts[-2:])
+
+            # Input parameters as strings
+            search_list = f"Universisites near {result}"
+            # total = 20  # Number of listings to scrape    
+            # The script you want to run
+            script_path = "google_maps.py"
+            # Run the subprocess with the virtual environment's Python interpreter
+            result = subprocess.run(
+                ['python', script_path, search_list],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            df_universities = XLSXHandler().load_xlsx(postcode)
+            return df_universities
+    except Exception as e:
+        print(traceback.format_exc())
 
 # Define the endpoint
 @app.get("/process_postcode/")
@@ -363,16 +503,138 @@ async def process_postcode(postcode: str):
         df_household_income,df_neighbourhood_income,full_address = await loop.run_in_executor(executor, fetch_affluence, url_affluence)
         print(df_household_income,df_neighbourhood_income)
 
+        # df_universities = fetch_universities_data(full_address)
+        # print(df_universities)
+        # df_universities =  fetch_universities_data(full_address)
+        # print(df_universities)
+
+
+        # parts = [part.strip() for part in full_address.split(',')]
+        # result = ', '.join(parts[-2:])
+
+        # # Input parameters as strings
+        # search_list = f"Universisites near {result}"
+        # total = 20  # Number of listings to scrape
+
+        # # Run scraper.py in a subprocess and capture output
+        # # result = subprocess.run(
+        # #     ["D:/work/automation/free_map_tools/final/Location_analyzer/venv/Scripts/python", "google_maps.py", search_list],
+        # #     stdout=subprocess.PIPE,
+        # #     text=True
+        # # )
+
+
+        # # Specify the path to the Python executable in your virtual environment
+        # # venv_python_path = r"D:/work/automation/free_map_tools/final/Location_analyzer/venv/Scripts/python"
+        
+        # # The script you want to run
+        # script_path = "google_maps.py"
+        
+        
+
+        # # Run the subprocess with the virtual environment's Python interpreter
+        # result = subprocess.run(
+        #     ['python', script_path, search_list],
+        #     stdout=subprocess.PIPE,
+        #     stderr=subprocess.PIPE,
+        #     text=True
+        # )
+        # # df_universities=XLSXHandler.laod_xlsx(postcode)
+        # df_universities = XLSXHandler().load_xlsx(postcode)
+        # print(df_universities.head)
+
+        # df_universities=df_universities[['name','address','url']]
+
+        #############################################################################################################################################
+
+        # df_universities=fetch_universities(full_address,postcode)
+
+                # df_universities=XLSXHandler.laod_xlsx(postcode)
+
+
+
+
+
+
+
+
+
+        df_universities = XLSXHandler().load_xlsx(postcode)
+        print(df_universities)
+        # print(df_universities.head)
+        if df_universities is not None:
+            df_universities=df_universities[['name','address','url']]
+            # return df_universities
+        else:
+
+            parts = [part.strip() for part in full_address.split(',')]
+            result = ', '.join(parts[-2:])
+
+            # Input parameters as strings
+            search_list = f"Universisites near {result}"
+            # total = 20  # Number of listings to scrape    
+            # The script you want to run
+            script_path = "google_maps.py"
+            # Run the subprocess with the virtual environment's Python interpreter
+            result = subprocess.run(
+                ['python', script_path, search_list],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            df_universities = XLSXHandler().load_xlsx(postcode)
+
+
+
+
+
+            # return df_universities
+
+####################################################################################
+
+        # df_universities= pd.DataFrame(columns=['name', 'address', 'url'])
+            # Check if result is successful before parsing
+        # if result.returncode == 0:
+        #     # Replace `result.stdout` with your actual JSON string from the output
+        #     result_stdout = result.stdout.strip()  # Remove any trailing newlines or extra spaces
+        #     print(result_stdout)
+        #     # Try loading JSON directly
+        #     try:
+        #         # Convert the string to a dictionary first
+        #         json_data = json.loads(result_stdout)
+        #         print("---------------------------------------------------",json_data)
+        #         # Now load it into a DataFrame
+        #         df_universities = pd.DataFrame(json_data)
+        #         print(df_universities)
+        #     except json.JSONDecodeError as e:
+        #         print("JSON decode error:", e)
+        #         # print("Output received:", result_stdout)
+        #     # df_universities = pd.read_json(result.stdout)
+        #     print(df_universities)
+        # else:
+        #     print("Subprocess failed:", result.stderr)
+
+        # search_list = ["restaurant near me"]
+        # total = 10  # Number of listings to scrape
+
+        # business_list = await loop.run_in_executor(asyncio.run(GoogleMapsScraper.scrape(search_list, total)))
+        # print(business_list)
+
         ###### occupation #########################
         url_occupation= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
         df_occcupation,occupation_location_text = await loop.run_in_executor(executor, fetch_occupation, url_occupation)
         print(df_occcupation,occupation_location_text)
+
+        ###### transport #########################
+        url_transport= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/transport'
+        connectivity_df,stations_df = await loop.run_in_executor(executor, fetch_transport, url_transport)
+        print(connectivity_df,stations_df)        
         #Save crystal data to json 
-        handler.add_crystal_data(postcode, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text)
-        print( "________________________________in main _______________________________________")
+        handler.add_crystal_data(postcode, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df)
+        print( "________________________________in main _______________________________________",full_address)
 
         # Generate plot
-        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode)
+        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode)
 
         # save data 
         save_data_to_database(postcode=postcode)

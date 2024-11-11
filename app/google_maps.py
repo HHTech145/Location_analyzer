@@ -1,11 +1,16 @@
-from playwright.sync_api import sync_playwright
-from playwright.async_api import async_playwright
+
 
 from dataclasses import dataclass, asdict, field
 import pandas as pd
 import os
 import asyncio
 import sys
+
+
+from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
+
+
 @dataclass
 class Business:
     """Holds business data"""
@@ -181,148 +186,151 @@ class GoogleMapsScraper:
 
     @staticmethod
     def scrape(search_list, total=20):
+        # print("in gogole maps ---------------------------------------------------------------------------------------")
         """Main method to scrape business data for a given list of search queries"""
         business_list = BusinessList()
-        print("search_list",search_list)
+
         with sync_playwright() as p:
-            print("in playwirght ____________________________________________________")
+            # print("in playwirght ____________________________________________________")
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-            print("_ in opening page -----------------------------------------")
+            # print("_ in opening page -----------------------------------------")
             page.goto("https://www.google.com/maps", timeout=60000)
             # wait is added for dev phase. can remove it in production
             page.wait_for_timeout(5000)
             
-            for search_for_index, search_for in enumerate(search_list):
-                print(search_for)
-                print(f"-----\n{search_for_index} - {search_for}".strip())
+            # for search_for_index, search_for in enumerate(search_list):
+            print(search_list)
+            # print(f"-----\n{search_for_index} - {search_for}".strip())
 
-                page.locator('//input[@id="searchboxinput"]').fill(search_for)
+            page.locator('//input[@id="searchboxinput"]').fill(search_list)
+            page.wait_for_timeout(3000)
+
+            page.keyboard.press("Enter")
+            page.wait_for_timeout(5000)
+
+            # scrolling
+            # page.hover('//a[contains(@href, "https://www.google.com/maps/place")]')
+            page.hover('//a[contains(@href, "https://www.google.com/maps/place")]', timeout=60000)
+
+            # this variable is used to detect if the bot
+            # scraped the same number of listings in the previous iteration
+            previously_counted = 0
+            while True:
+                page.mouse.wheel(0, 10000)
                 page.wait_for_timeout(3000)
 
-                page.keyboard.press("Enter")
-                page.wait_for_timeout(5000)
-
-                # scrolling
-                page.hover('//a[contains(@href, "https://www.google.com/maps/place")]')
-
-                # this variable is used to detect if the bot
-                # scraped the same number of listings in the previous iteration
-                previously_counted = 0
-                while True:
-                    page.mouse.wheel(0, 10000)
-                    page.wait_for_timeout(3000)
-
+                if (
+                    page.locator(
+                        '//a[contains(@href, "https://www.google.com/maps/place")]'
+                    ).count()
+                    >= total
+                ):
+                    listings = page.locator(
+                        '//a[contains(@href, "https://www.google.com/maps/place")]'
+                    ).all()[:total]
+                    listings = [listing.locator("xpath=..") for listing in listings]
+                    print(f"Total Scraped: {len(listings)}")
+                    break
+                else:
+                    # logic to break from loop to not run infinitely
+                    # in case arrived at all available listings
                     if (
                         page.locator(
                             '//a[contains(@href, "https://www.google.com/maps/place")]'
                         ).count()
-                        >= total
+                        == previously_counted
                     ):
                         listings = page.locator(
                             '//a[contains(@href, "https://www.google.com/maps/place")]'
-                        ).all()[:total]
-                        listings = [listing.locator("xpath=..") for listing in listings]
-                        print(f"Total Scraped: {len(listings)}")
+                        ).all()
+                        print(f"Arrived at all available\nTotal Scraped: {len(listings)}")
                         break
                     else:
-                        # logic to break from loop to not run infinitely
-                        # in case arrived at all available listings
-                        if (
+                        previously_counted = page.locator(
+                            '//a[contains(@href, "https://www.google.com/maps/place")]'
+                        ).count()
+                        print(
+                            f"Currently Scraped: ",
                             page.locator(
                                 '//a[contains(@href, "https://www.google.com/maps/place")]'
-                            ).count()
-                            == previously_counted
-                        ):
-                            listings = page.locator(
-                                '//a[contains(@href, "https://www.google.com/maps/place")]'
-                            ).all()
-                            print(f"Arrived at all available\nTotal Scraped: {len(listings)}")
-                            break
-                        else:
-                            previously_counted = page.locator(
-                                '//a[contains(@href, "https://www.google.com/maps/place")]'
-                            ).count()
-                            print(
-                                f"Currently Scraped: ",
-                                page.locator(
-                                    '//a[contains(@href, "https://www.google.com/maps/place")]'
-                                ).count(),
-                            )
+                            ).count(),
+                        )
 
-                business_list = BusinessList()
+            business_list = BusinessList()
 
-                # scraping
-                for listing in listings:
-                    try:
-                        listing.click()
-                        page.wait_for_timeout(5000)
+            # scraping
+            for listing in listings:
+                try:
+                    listing.click()
+                    page.wait_for_timeout(5000)
 
-                        name_xpath = '//div[contains(@class, "fontHeadlineSmall")]'
-                        address_xpath = '//button[@data-item-id="address"]//div[contains(@class, "fontBodyMedium")]'
-                        website_xpath = '//a[@data-item-id="authority"]//div[contains(@class, "fontBodyMedium")]'
-                        phone_number_xpath = '//button[contains(@data-item-id, "phone:tel:")]//div[contains(@class, "fontBodyMedium")]'
-                        reviews_span_xpath = '//span[@role="img"]'
+                    name_xpath = '//div[contains(@class, "fontHeadlineSmall")]'
+                    address_xpath = '//button[@data-item-id="address"]//div[contains(@class, "fontBodyMedium")]'
+                    website_xpath = '//a[@data-item-id="authority"]//div[contains(@class, "fontBodyMedium")]'
+                    phone_number_xpath = '//button[contains(@data-item-id, "phone:tel:")]//div[contains(@class, "fontBodyMedium")]'
+                    reviews_span_xpath = '//span[@role="img"]'
 
-                        business = Business()
+                    business = Business()
 
-                        if listing.locator(name_xpath).count() > 0:
-                            business.name = listing.locator(name_xpath).all()[0].inner_text()
-                        else:
-                            business.name = ""
-                        if page.locator(address_xpath).count() > 0:
-                            business.address = page.locator(address_xpath).all()[0].inner_text()
-                        else:
-                            business.address = ""
-                        if page.locator(website_xpath).count() > 0:
-                            business.website = page.locator(website_xpath).all()[0].inner_text()
-                        else:
-                            business.website = ""
-                        if page.locator(phone_number_xpath).count() > 0:
-                            business.phone_number = page.locator(phone_number_xpath).all()[0].inner_text()
-                        else:
-                            business.phone_number = ""
-                        if listing.locator(reviews_span_xpath).count() > 0:
-                            business.reviews_average = float(
-                                listing.locator(reviews_span_xpath).all()[0]
-                                .get_attribute("aria-label")
-                                .split()[0]
-                                .replace(",", ".")
-                                .strip()
-                            )
-                            business.reviews_count = int(
-                                listing.locator(reviews_span_xpath).all()[0]
-                                .get_attribute("aria-label")
-                                .split()[2]
-                                .replace(',','')
-                                .strip()
-                            )
-                        else:
-                            business.reviews_average = ""
-                            business.reviews_count = ""
-                        
-                        business.latitude, business.longitude = extract_coordinates_from_url(page.url)
-                        business.url=page.url
-                        business_list.business_list.append(business)
-                    except Exception as e:
-                        print(f'Error occured: {e}')
-                
-                #########
-                # output
-                #########
-                # business_list.save_to_excel(f"google_maps_data_{search_for}".replace(' ', '_'))
-                # print(type(business_list))
-                # print(business_list.pd.dataframe)
-                # df=pd.DataFrame(business_list)
-                # After scraping and appending business data
-                business_dicts = [asdict(business) for business in business_list.business_list]
+                    if listing.locator(name_xpath).count() > 0:
+                        business.name = listing.locator(name_xpath).all()[0].inner_text()
+                    else:
+                        business.name = ""
+                    if page.locator(address_xpath).count() > 0:
+                        business.address = page.locator(address_xpath).all()[0].inner_text()
+                    else:
+                        business.address = ""
+                    if page.locator(website_xpath).count() > 0:
+                        business.website = page.locator(website_xpath).all()[0].inner_text()
+                    else:
+                        business.website = ""
+                    if page.locator(phone_number_xpath).count() > 0:
+                        business.phone_number = page.locator(phone_number_xpath).all()[0].inner_text()
+                    else:
+                        business.phone_number = ""
+                    if listing.locator(reviews_span_xpath).count() > 0:
+                        business.reviews_average = float(
+                            listing.locator(reviews_span_xpath).all()[0]
+                            .get_attribute("aria-label")
+                            .split()[0]
+                            .replace(",", ".")
+                            .strip()
+                        )
+                        business.reviews_count = int(
+                            listing.locator(reviews_span_xpath).all()[0]
+                            .get_attribute("aria-label")
+                            .split()[2]
+                            .replace(',','')
+                            .strip()
+                        )
+                    else:
+                        business.reviews_average = ""
+                        business.reviews_count = ""
+                    
+                    business.latitude, business.longitude = extract_coordinates_from_url(page.url)
+                    business.url=page.url
+                    business_list.business_list.append(business)
+                except Exception as e:
+                    print(f'Error occured: {e}')
+            
+            #########
+            # output
+            #########
+            business_list.save_to_excel(f"google_maps_data_{search_list}".replace(' ', '_'))
+            # print(type(business_list))
+            # print(business_list.pd.dataframe)
+            # df=pd.DataFrame(business_list)
+            # After scraping and appending business data
+            # business_dicts = [asdict(business) for business in business_list.business_list]
 
 
-                # Convert to DataFrame
-                df = pd.DataFrame(business_dicts)
-                df_universities = df[['name', 'address', 'url']]
-                print(df_universities,df_universities.columns)
-                # print(df_universities.to_json())  # Output as JSON
+            # Convert to DataFrame
+            # df = pd.DataFrame(business_dicts)
+            # df_universities = df[['name', 'address', 'url']]
+            # print(df_universities.to_json())  # Output as JSON
+
+            # print(df_universities,df_universities.columns)
                 # print(df.head)
                 
                 # business_list.save_to_csv(f"google_maps_data_{search_for}".replace(' ', '_'))
@@ -353,4 +361,4 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    GoogleMapsScraper.scrape(sys.argv[1],total=20)
+    s=GoogleMapsScraper.scrape(sys.argv[1],total=20)

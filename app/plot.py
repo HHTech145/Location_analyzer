@@ -110,7 +110,7 @@ class PredictionsPlotter:
 
 
 
-    def create_plot(self,demographics_df,restaurants_df,pubs_df,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text):
+    def create_plot(self,demographics_df,restaurants_df,pubs_df,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities):
         print("in plot ______________________________________________________")
         output_file(self.output_file_name, title="Predictions Plot", mode="inline")
         
@@ -180,6 +180,9 @@ class PredictionsPlotter:
         pubs_source = ColumnDataSource(pubs_df)
         income_source= ColumnDataSource(df_neighbourhood_income)
         occupation_source= ColumnDataSource(df_occcupation)
+        connectivity_source=ColumnDataSource(connectivity_df)
+        stations_source=ColumnDataSource(stations_df)
+        unviersities_source= ColumnDataSource(df_universities)
 
         # Defining columns for the Demographics table
         demographics_columns = [
@@ -217,9 +220,34 @@ class PredictionsPlotter:
         ]
         occupation_table = DataTable(source=occupation_source, columns=occupation_columns, width=800, height=200)        
 
+        # defining columns for transport
+
+        connectivity_columns=[
+            TableColumn(field="connectivity to public transport", title="connectivity to public transport"),
+            TableColumn(field="travel zone", title="travel zone")            
+        ]
+        connectivity_table = DataTable(source=connectivity_source, columns=connectivity_columns, width=800, height=50) 
+
+        
+        station_columns=[
+            TableColumn(field="station_name", title="station_name"),
+            TableColumn(field="distance", title="distance"),
+            TableColumn(field="lines", title="lines")             
+        ]
+        station_table = DataTable(source=stations_source, columns=station_columns, width=1000, height=400) 
+
+
+        # university column 
+        universities_columns=[
+            TableColumn(field="name", title="name"),
+            TableColumn(field="address", title="address"),
+            TableColumn(field="url", title="url",formatter =  HTMLTemplateFormatter(template = '<a href="<%= url %>"><%= value %></a>'))             
+        ]
+        univeristies_table = DataTable(source=unviersities_source, columns=universities_columns, width=1200, height=400) 
+
         # last_row = df_neighbourhood_income.iloc[-1]
         # df_neighbourhood_income = df_neighbourhood_income.drop(df_neighbourhood_income.index[-1])
-        print("_________________________________in plot _______________________________________________________________",df_household_income,df_neighbourhood_income,df_neighbourhood_income.columns,"))))",income_table)
+        # print("_________________________________in plot _______________________________________________________________",df_household_income,df_neighbourhood_income,df_neighbourhood_income.columns,"))))",income_table)
 
     # Create headers for the tables
         plot_header=Div(text=f"<h1>{full_address}</h1>", width=800)
@@ -227,6 +255,11 @@ class PredictionsPlotter:
         demographics_header = Div(text="<h3>Ethnicity,Religion,Households</h3>", width=800)
         restaurants_header = Div(text="<h3>Restaurants Near Postcode</h3>", width=800)
         pubs_header = Div(text="<h3>Bars, pubs, clubs</h3>", width=800)
+        
+        parts = [part.strip() for part in full_address.split(',')]
+        result = ', '.join(parts[-2:])
+
+        universities_header=Div(text=f"<h1>Universities Near {result}</h1>", width=800)
         # HTML and CSS for the Div
         income_header = Div(
             text=f"""
@@ -285,7 +318,8 @@ class PredictionsPlotter:
             width=1000, height=800
         )
 
-
+        transport_header = Div(text='''<h1>Transport Section</h1>
+                               <svg width="20" height="20" viewBox="0 0 32 24"><path d="M16 0A12 12 0 004.68 8h4.4a8 8 0 0113.8 0h4.4A12 12 0 0016 0zM27.8 10h-4.08a7.86 7.86 0 01.26 2 8.23 8.23 0 01-.25 2h4.08a11.9 11.9 0 000-4zM16 19.98a8 8 0 01-6.91-4h-4.4a12 12 0 0022.62 0h-4.4a8 8 0 01-6.9 4zm-8-8a7.86 7.86 0 01.26-2H4.17a11.9 11.9 0 000 4h4.08a8.23 8.23 0 01-.25-2z" fill="#ED7C23"></path><path d="M29.98 10H2a2 2 0 00-2 2 2 2 0 002 2h27.98a2 2 0 002-2 2 2 0 00-2-2z" fill="#213e90"></path></svg>''', width=800)
         layout = column(
             plot_header,
             checkbox, 
@@ -297,7 +331,10 @@ class PredictionsPlotter:
             pubs_header, pubs_table, # pubs section 
             income_header,income_table, # income section 
             occupation_header,occupation_table,
-            google_maps_header,google_maps_div,  # Google Maps iframe without API key
+            transport_header,connectivity_table,station_table,
+            universities_header,univeristies_table,
+            google_maps_header,google_maps_div,
+                # Google Maps iframe without API key
         )
         save(layout)
         # show(layout)
@@ -472,10 +509,10 @@ class PredictionsPlotter:
         output_file("bootstrap_styled_prediction_plot.html")
         save(layout)
     
-    def run(self,demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,postcode):
+    def run(self,demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,postcode):
         self.load_predictions(postcode)
         self.process_predictions(postcode)
-        self.create_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,)
+        self.create_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,)
 
 # # Usage
 if __name__ == "__main__":

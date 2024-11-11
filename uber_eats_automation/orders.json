@@ -1,0 +1,1331 @@
+{
+    "71795": {
+        "order_details": {
+            "Order ID": "71795",
+            "Store Details": "Maeme's flavoured Fried wings",
+            "Order placed time": "11/2/202411:42 AM",
+            "Delivery Time": "11/2/202412:25 PM",
+            "Customer": "Gloria K",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 22.24
+        },
+        "order_time_details": [
+            {
+                "time": "11:42 AM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "11:42 AM",
+                "description": ""
+            },
+            {
+                "time": "11:42 AM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "11:42 AM",
+                "description": ""
+            },
+            {
+                "time": "12:10 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "The Wrap",
+                "meal_price": 9.49,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "price": 0,
+                        "option": [
+                            "Buffalo Flavor"
+                        ]
+                    },
+                    {
+                        "customization": "Add ons",
+                        "price": 0,
+                        "option": [
+                            "No Add On"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "10x Pieces Wings",
+                "meal_price": 12.75,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "price": 0,
+                        "option": [
+                            "Buffalo Flavor"
+                        ]
+                    },
+                    {
+                        "customization": "Choose your Dip...",
+                        "price": 0,
+                        "option": [
+                            "Garlic Sauce"
+                        ]
+                    },
+                    {
+                        "customization": "Cutlery...",
+                        "price": 0,
+                        "option": [
+                            "Golves"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 22.24
+            },
+            {
+                "description": "Special Offer",
+                "amount": -2.55
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 19.69
+            }
+        ]
+    },
+    "6F0EE": {
+        "order_details": {
+            "Order ID": "6F0EE",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/2/20242:19 PM",
+            "Delivery Time": "11/2/20243:05 PM",
+            "Customer": "Anisa K",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "SURAYAKANT",
+            "Subtotal": 21.28
+        },
+        "order_time_details": [
+            {
+                "time": "02:19 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "02:19 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "02:48 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "03:03 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Quarter Chicken Meal",
+                "meal_price": 10.79,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Please Choose your Flavor...",
+                        "price": 0,
+                        "option": [
+                            "Mild",
+                            "Medium"
+                        ]
+                    },
+                    {
+                        "customization": "How would you like to have Fries ?",
+                        "price": 0,
+                        "option": [
+                            "Normal Fries"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Meal Drink...",
+                        "price": 0,
+                        "option": [
+                            "Tango Orange"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Dip..",
+                        "price": 0,
+                        "option": [
+                            "Burger Sauce"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "Quarter Chicken Meal",
+                "meal_price": 10.79,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Please Choose your Flavor...",
+                        "price": 0,
+                        "option": [
+                            "Extra Hot"
+                        ]
+                    },
+                    {
+                        "customization": "How would you like to have Fries ?",
+                        "price": 0,
+                        "option": [
+                            "Piri Piri Fries"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Meal Drink...",
+                        "price": 0,
+                        "option": [
+                            "Pepsi"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Dip..",
+                        "price": 0,
+                        "option": [
+                            "Hot Chilli Sauce"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 21.28
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 21.28
+            }
+        ]
+    },
+    "4FDD0": {
+        "order_details": {
+            "Order ID": "4FDD0",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/2/20242:54 PM",
+            "Delivery Time": "11/2/20243:25 PM",
+            "Customer": "vishal p",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "ANGREJ SINGH",
+            "Subtotal": 10.49
+        },
+        "order_time_details": [
+            {
+                "time": "02:54 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "02:54 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "03:17 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "03:28 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken & Rice",
+                "meal_price": 10.49,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Please Choose your Flavor...",
+                        "price": 0,
+                        "option": [
+                            "Medium"
+                        ]
+                    },
+                    {
+                        "customization": "Would you like any Dips?",
+                        "price": 0,
+                        "option": [
+                            "No Dip"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 10.49
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 10.49
+            }
+        ]
+    },
+    "2CC78": {
+        "order_details": {
+            "Order ID": "2CC78",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/2/20247:42 PM",
+            "Delivery Time": "11/2/20248:20 PM",
+            "Customer": "Zoha J",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 14.29
+        },
+        "order_time_details": [
+            {
+                "time": "07:42 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "07:42 PM",
+                "description": ""
+            },
+            {
+                "time": "07:42 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "07:42 PM",
+                "description": ""
+            },
+            {
+                "time": "07:55 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken & Rice Meal",
+                "meal_price": 14.29,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Please Choose your Flavor...",
+                        "price": 0,
+                        "option": [
+                            "Extra Hot"
+                        ]
+                    },
+                    {
+                        "customization": "Would You Like to GO Large ?",
+                        "price": 0,
+                        "option": [
+                            "Go Large"
+                        ]
+                    },
+                    {
+                        "customization": "How would you like to have Fries ?",
+                        "price": 0,
+                        "option": [
+                            "Piri Piri Fries"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Meal Drink...",
+                        "price": 0,
+                        "option": [
+                            "Coke"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Dip..",
+                        "price": 0,
+                        "option": [
+                            "Garlic Mayo"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 14.29
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 14.29
+            }
+        ]
+    },
+    "9EDC5": {
+        "order_details": {
+            "Order ID": "9EDC5",
+            "Store Details": "Maeme's flavoured Fried wings",
+            "Order placed time": "11/5/202411:08 PM",
+            "Delivery Time": "11/5/202411:55 PM",
+            "Customer": "Mario S",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 20.49
+        },
+        "order_time_details": [
+            {
+                "time": "11:08 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "11:08 PM",
+                "description": ""
+            },
+            {
+                "time": "11:09 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "11:09 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "6x Pieces Wings",
+                "meal_price": 8.75,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "option": [
+                            "Smoky Barrel BBQ Flavour"
+                        ]
+                    },
+                    {
+                        "customization": "Choose your Dip...",
+                        "option": [
+                            "Garlic Sauce"
+                        ]
+                    },
+                    {
+                        "customization": "Cutlery...",
+                        "option": [
+                            "Forks",
+                            "Napkins"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "6x Pieces Wings",
+                "meal_price": 8.75,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "option": [
+                            "Sweet and Spicy Flavor"
+                        ]
+                    },
+                    {
+                        "customization": "Choose your Dip...",
+                        "option": [
+                            "Piri Piri Mayo Sauce"
+                        ]
+                    },
+                    {
+                        "customization": "Cutlery...",
+                        "option": [
+                            "Forks",
+                            "Napkins"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 20.49
+            },
+            {
+                "description": "Special Offer",
+                "amount": -3.5
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 16.99
+            }
+        ]
+    },
+    "4ED87": {
+        "order_details": {
+            "Order ID": "4ED87",
+            "Store Details": "Desi Taraka",
+            "Order placed time": "11/6/202412:37 PM",
+            "Delivery Time": "11/6/20241:40 PM",
+            "Customer": "Preseley F",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 48.95
+        },
+        "order_time_details": [
+            {
+                "time": "12:37 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "12:41 PM",
+                "description": "Order cancelled by restaurant"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken Biryani",
+                "meal_price": 11.99,
+                "quantity": "2",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Estimated payout",
+                "amount": 0.0
+            }
+        ]
+    },
+    "A39FB": {
+        "order_details": {
+            "Order ID": "A39FB",
+            "Store Details": "Maeme's flavoured Fried wings",
+            "Order placed time": "11/6/202412:01 PM",
+            "Delivery Time": "11/6/202412:50 PM",
+            "Customer": "Satinder BUber one",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 60.46
+        },
+        "order_time_details": [
+            {
+                "time": "12:01 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "12:01 PM",
+                "description": ""
+            },
+            {
+                "time": "12:01 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "12:01 PM",
+                "description": ""
+            },
+            {
+                "time": "12:33 PM",
+                "description": ""
+            },
+            {
+                "time": "12:44 PM",
+                "description": "Order delivered to customer"
+            },
+            {
+                "time": "12:44 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Crispy Korean",
+                "meal_price": 27.98,
+                "quantity": "2",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "option": [
+                            "Smoky Barrel BBQ Flavour"
+                        ]
+                    },
+                    {
+                        "customization": "Add ons",
+                        "option": [
+                            "Maeme's Famous Garlic Sauce",
+                            "American Cheese Slice"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "Veggie Wrap",
+                "meal_price": 8.99,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "option": [
+                            "Sweet and Spicy Flavor"
+                        ]
+                    },
+                    {
+                        "customization": "Add ons",
+                        "option": [
+                            "Maeme's Famous Garlic Sauce",
+                            "American Cheese Slice"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "12x Pieces Wings",
+                "meal_price": 13.75,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "option": [
+                            "Tropical Fire (Mango & Chili Flavour)",
+                            "Sweet and Spicy Flavor"
+                        ]
+                    },
+                    {
+                        "customization": "Choose your Dip...",
+                        "option": [
+                            "Garlic Sauce"
+                        ]
+                    },
+                    {
+                        "customization": "Cutlery...",
+                        "option": [
+                            "Golves"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "6x Pieces Boneless",
+                "meal_price": 6.75,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose your Flavour..",
+                        "option": [
+                            "Seoul Spice Korean Chilli Flavour",
+                            "Sweet and Spicy Flavor"
+                        ]
+                    },
+                    {
+                        "customization": "Choose your Dip...",
+                        "option": [
+                            "Piri Piri Mayo Sauce"
+                        ]
+                    },
+                    {
+                        "customization": "Cutlery...",
+                        "option": [
+                            "Golves"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 60.46
+            },
+            {
+                "description": "Special Offer",
+                "amount": -2.75
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 57.71
+            }
+        ]
+    },
+    "F475A": {
+        "order_details": {
+            "Order ID": "F475A",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/6/20246:07 PM",
+            "Delivery Time": "11/6/20246:30 PM",
+            "Customer": "mahek h",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 13.49
+        },
+        "order_time_details": [
+            {
+                "time": "06:07 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "06:07 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "06:27 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "06:29 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken & Rice Meal",
+                "meal_price": 12.99,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Please Choose your Flavor...",
+                        "option": [
+                            "Hot"
+                        ]
+                    },
+                    {
+                        "customization": "How would you like to have Fries ?",
+                        "option": [
+                            "Normal Fries"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Meal Drink...",
+                        "option": [
+                            "Fanta Twist"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Dip..",
+                        "option": [
+                            "Garlic Mayo"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 13.49
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 13.49
+            }
+        ]
+    },
+    "0AAED": {
+        "order_details": {
+            "Order ID": "0AAED",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/6/202410:39 PM",
+            "Delivery Time": "11/6/202411:10 PM",
+            "Customer": "Lakhveer BUber one",
+            "Fulfilment": "Delivery Uber Eats",
+            "Courier": "--",
+            "Subtotal": 11.99
+        },
+        "order_time_details": [
+            {
+                "time": "10:39 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "10:39 PM",
+                "description": ""
+            },
+            {
+                "time": "10:39 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "10:39 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "6x Fried Wings  Meal",
+                "meal_price": 8.99,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Choose Your Dip..",
+                        "option": [
+                            "Garlic Mayo"
+                        ]
+                    },
+                    {
+                        "customization": "How would you like to have Fries ?",
+                        "option": [
+                            "Normal Fries"
+                        ]
+                    },
+                    {
+                        "customization": "Choose Your Meal Drink...",
+                        "option": [
+                            "Fanta Orange"
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "1 Pc Chicken",
+                "meal_price": 3.0,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Would you like any Dips?",
+                        "option": [
+                            "No Dip"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 11.99
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 11.99
+            }
+        ]
+    },
+    "16D4A": {
+        "order_details": {
+            "Order ID": "16D4A",
+            "Store Details": "Desi Taraka",
+            "Order placed time": "11/7/20249:44 PM",
+            "Delivery Time": "11/7/202410:20 PM",
+            "Customer": "Ravneet C",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "--",
+            "Subtotal": 10.48
+        },
+        "order_time_details": [
+            {
+                "time": "09:44 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "09:44 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "10:12 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "10:19 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Aloo Tikki Chaat",
+                "meal_price": 6.99,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Piri Piri Fries",
+                "meal_price": 3.49,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 10.48
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 10.48
+            }
+        ]
+    },
+    "0D7AA": {
+        "order_details": {
+            "Order ID": "0D7AA",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/8/20241:05 PM",
+            "Delivery Time": "11/8/20241:45 PM",
+            "Customer": "Henna JUber one",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "--",
+            "Subtotal": 38.75
+        },
+        "order_time_details": [
+            {
+                "time": "01:05 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "01:05 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "01:06 PM",
+                "description": "Order cancelled by restaurant"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken Burrito",
+                "meal_price": 17.08,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Chicken Burrito",
+                "meal_price": 17.08,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Chicken Burrito",
+                "meal_price": 17.08,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Chicken Burrito",
+                "meal_price": 17.08,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Chocolate Fudge Cake",
+                "meal_price": 4.59,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 38.75
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 38.75
+            }
+        ]
+    },
+    "7E27B": {
+        "order_details": {
+            "Order ID": "7E27B",
+            "Store Details": "Desi Taraka",
+            "Order placed time": "11/8/20247:56 PM",
+            "Delivery Time": "11/8/20248:40 PM",
+            "Customer": "Manpreet SUber one",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "SAMREEN UNNISA",
+            "Subtotal": 16.79
+        },
+        "order_time_details": [
+            {
+                "time": "07:56 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "07:56 PM",
+                "description": ""
+            },
+            {
+                "time": "07:56 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "07:56 PM",
+                "description": ""
+            },
+            {
+                "time": "08:12 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Butter Chicken",
+                "meal_price": 11.99,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Roti",
+                "meal_price": 4.8,
+                "quantity": "3",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 16.79
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 16.79
+            }
+        ]
+    },
+    "C9329": {
+        "order_details": {
+            "Order ID": "C9329",
+            "Store Details": "Maemes Burgers (Southall)",
+            "Order placed time": "11/8/2024",
+            "Delivery Time": "9:16 PM",
+            "Customer": "Harpreet B",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "KISHAN YAGNESHKUMAR",
+            "Subtotal": ""
+        },
+        "order_time_details": [
+            {
+                "time": "09:16 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "09:17 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "09:41 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "09:52 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "American Cheese Burger",
+                "meal_price": 13.79,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "American Cheese Burger",
+                "meal_price": 13.79,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Food Sales (including VAT)",
+                "amount": 13.79
+            },
+            {
+                "description": "Uber Fee (including VAT)",
+                "amount": -4.97
+            },
+            {
+                "description": "Net payout",
+                "amount": 8.82
+            }
+        ]
+    },
+    "78456": {
+        "order_details": {
+            "Order ID": "78456",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/8/2024",
+            "Delivery Time": "9:45 PM",
+            "Customer": "Saj A",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "JOAQUIM",
+            "Subtotal": ""
+        },
+        "order_time_details": [
+            {
+                "time": "09:45 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "09:45 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "09:57 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "10:16 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken Noodle",
+                "meal_price": 8.99,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "6x Fried Wings",
+                "meal_price": 6.49,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Chicken Noodle",
+                "meal_price": 8.99,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "6x Fried Wings",
+                "meal_price": 6.49,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Food Sales (including VAT)",
+                "amount": 15.48
+            },
+            {
+                "description": "Uber Fee (including VAT)",
+                "amount": -5.57
+            },
+            {
+                "description": "Net payout",
+                "amount": 9.91
+            }
+        ]
+    },
+    "82817": {
+        "order_details": {
+            "Order ID": "82817",
+            "Store Details": "Maeme's (Fried Flavoured House)",
+            "Order placed time": "11/9/2024",
+            "Delivery Time": "12:41 PM",
+            "Customer": "Nasir K",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "PRIYANKABAHEN",
+            "Subtotal": ""
+        },
+        "order_time_details": [
+            {
+                "time": "12:41 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "12:41 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "01:02 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "01:15 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "8x Pieces Boneless",
+                "meal_price": 8.75,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Pepsi Max",
+                "meal_price": 1.89,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Regular Fries",
+                "meal_price": 2.99,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "8x Pieces Boneless",
+                "meal_price": 8.75,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Food Sales (including VAT)",
+                "amount": 13.63
+            },
+            {
+                "description": "Uber Fee (including VAT)",
+                "amount": -4.91
+            },
+            {
+                "description": "Net payout",
+                "amount": 8.72
+            }
+        ]
+    },
+    "F9EC2": {
+        "order_details": {
+            "Order ID": "F9EC2",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/9/2024",
+            "Delivery Time": "12:34 PM",
+            "Customer": "Lii M",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "RAFIQ",
+            "Subtotal": ""
+        },
+        "order_time_details": [
+            {
+                "time": "12:34 PM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "12:34 PM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "01:00 PM",
+                "description": "Courier departs"
+            },
+            {
+                "time": "01:18 PM",
+                "description": "Order delivered to customer"
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Family Platter",
+                "meal_price": 20.49,
+                "quantity": "1",
+                "customizations": []
+            },
+            {
+                "meal_name": "Family Platter",
+                "meal_price": 20.49,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Food Sales (including VAT)",
+                "amount": 20.49
+            },
+            {
+                "description": "Uber Fee (including VAT)",
+                "amount": -7.38
+            },
+            {
+                "description": "Net payout",
+                "amount": 13.11
+            }
+        ]
+    },
+    "A9F38": {
+        "order_details": {
+            "Order ID": "A9F38",
+            "Store Details": "Maeme's Piri Piri Southall",
+            "Order placed time": "11/11/2024 8:33 AM",
+            "Delivery Time": "11/11/2024 11:35 AM",
+            "Customer": "ahmed a",
+            "Fulfilment": "DeliveryUber Eats",
+            "Courier": "--",
+            "Subtotal": 22.48
+        },
+        "order_time_details": [
+            {
+                "time": "08:33 AM",
+                "description": "Order placed by customer"
+            },
+            {
+                "time": "10:00 AM",
+                "description": ""
+            },
+            {
+                "time": "10:00 AM",
+                "description": ""
+            },
+            {
+                "time": "10:00 AM",
+                "description": ""
+            },
+            {
+                "time": "10:29 AM",
+                "description": "Order accepted by store"
+            },
+            {
+                "time": "10:29 AM",
+                "description": ""
+            },
+            {
+                "time": "11:14 AM",
+                "description": ""
+            },
+            {
+                "time": "12:12 PM",
+                "description": "Order delivered to customer"
+            },
+            {
+                "time": "12:12 PM",
+                "description": ""
+            }
+        ],
+        "order_meal_details": [
+            {
+                "meal_name": "Chicken & Rice",
+                "meal_price": 10.49,
+                "quantity": "1",
+                "customizations": [
+                    {
+                        "customization": "Please Choose your Flavor...",
+                        "options": [
+                            {
+                                "option": "Lemon & Herb",
+                                "price": "0.00"
+                            }
+                        ]
+                    },
+                    {
+                        "customization": "Would you like any Dips?",
+                        "options": [
+                            {
+                                "option": "No Dip",
+                                "price": "0.00"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "meal_name": "Spicy Chicken Fusilli Pasta",
+                "meal_price": 11.99,
+                "quantity": "1",
+                "customizations": []
+            }
+        ],
+        "order_price_details": [
+            {
+                "description": "Subtotal",
+                "amount": 22.48
+            },
+            {
+                "description": "Estimated payout",
+                "amount": 22.48
+            }
+        ]
+    }
+}

@@ -118,6 +118,13 @@ class Database:
                 );
                 """,
                 """
+                CREATE TABLE IF NOT EXISTS crystal_transport (
+                    postcode VARCHAR(10) PRIMARY KEY,
+                    transport JSON,
+                    FOREIGN KEY (postcode) REFERENCES postcodes(postcode)
+                );
+                """,
+                """
                 CREATE TABLE IF NOT EXISTS crystal_occupation (
                     postcode VARCHAR(10) PRIMARY KEY,
                     occupation JSON,
@@ -272,6 +279,21 @@ class Database:
         finally:
             cursor.close()
 
+    def insert_or_update_crystal_transport(self, postcode, transport):
+        """Insert or update data into the crystal transport table"""
+        try:
+            cursor = self.connection.cursor()
+            transport_json = json.dumps(transport)
+            sql = """INSERT INTO crystal_transport (postcode, transport) 
+                    VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE transport = VALUES(transport)"""
+            cursor.execute(sql, (postcode, transport_json))
+            self.connection.commit()
+            print(f"Upserted data into crystal_transport: {postcode}")
+        except Error as e:
+            print(f"Error inserting or updating crystal_transport: {e}")
+        finally:
+            cursor.close()
 
     # def insert_into_postcodes(self, postcode, radius, prediction, address):
     #     """Insert data into the postcodes table"""

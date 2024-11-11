@@ -93,6 +93,11 @@ class PostcodeDataHandler:
             income_data = crystal_data.get('income', {})
             if income_data:  # Ensure data exists before inserting
                 self.db.insert_or_update_crystal_income(postcode, income_data)
+
+            # Insert income data as JSON
+            transport_data = crystal_data.get('transport', {})
+            if transport_data:  # Ensure data exists before inserting
+                self.db.insert_or_update_crystal_transport(postcode, transport_data)
         except Exception as e:
             print(traceback.format_exc())
 

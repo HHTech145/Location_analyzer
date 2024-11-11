@@ -159,6 +159,145 @@ class WebDriverHelper:
             print(f"Error occurred while extracting occupations: {e}")
             return pd.DataFrame()
         
+    def get_transport_data(self):
+        print("----------------------------------------------------------------------------------------------------------------------------------------------/////////////")
+        occupation_text_div = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[2]/main/article/div[2]/div[1]')
+        soup = BeautifulSoup(occupation_text_div.get_attribute('innerHTML'), 'html.parser')
+        # Initialize dictionary to hold the extracted information
+        # connectivity_data = {}
+        # stations_data = []
+        # # Check if the 'Connectivity to public transport' section exists
+        # connectivity_div = soup.find('div', class_='es_a')
+        # transport_score=""
+        # travel_zone=""
+        # if connectivity_div:
+        #     # Extracting connectivity rating
+        #     connectivity_info = connectivity_div.find('div', class_='ig_a dz_a dz_d es_b')
+        #     if connectivity_info:
+        #         transport_text = connectivity_info.find('p', class_='hu_a dz_e').text.strip()
+        #         transport_score = connectivity_info.find('div', class_='hs_a es_c').text.strip()
+        #         print(f"{transport_text}: {transport_score}")
+            
+        #     # Extracting travel zone
+        #     travel_zone_info = connectivity_div.find('div', class_='ig_a dz_a es_g')
+        #     if travel_zone_info:
+        #         travel_text = travel_zone_info.find('p', class_='hu_a dz_e').text.strip()
+        #         travel_zone = travel_zone_info.find('div', class_='hs_a').text.strip()
+        #         print(f"{travel_text}: {travel_zone}")
+            
+        #         # Adding connectivity information to dictionary
+
+        #     connectivity_data = {
+        #         "connectivity to public transport": transport_score,
+        #         "travel zone": travel_zone
+        #     }
+        # else:
+        #     print("Connectivity to public transport information is not available.")
+
+        # # Find all the station details
+        # stations = []
+        # # Find all the station details and group them by station name
+        # for station in soup.find_all('li', class_='er_c'):
+        #     station_name = station.find('p', class_='er_e').text.strip()
+        #     distance = station.find('span', class_='er_f').text.strip()
+        #     # lines = [line.text.strip() for line in station.find_all('span', class_='line_class')]  # Adjust class as necessary
+        #     # Extract lines
+        #     lines = [span.text.strip() for span in station.find_all('span', class_='er_j')]
+        #     s = ""
+        #     if len(lines) > 1:
+        #         for i, line in enumerate(lines):
+        #             s += line
+        #             if i < len(lines) - 1:
+        #                 s += ","
+        #     else:
+        #         s = lines[0]
+        #     print(s)
+        #     # Add to the stations_data dictionary
+        #     stations_data[station_name] = {"distance": distance, "lines": s}
+
+        # # Create DataFrame for connectivity
+        # connectivity_df = pd.DataFrame([connectivity_data])
+
+        # # Create DataFrame for stations
+        # stations_df = pd.DataFrame.from_dict(stations_data, orient='index')
+        # # Display extracted stations
+        # for name, dist in stations:
+        #     print(f"Station: {name}, Distance: {dist}")
+        connectivity_data = {}
+        stations_data = []
+
+        # Check if the 'Connectivity to public transport' section exists
+        connectivity_div = soup.find('div', class_='es_a')
+        transport_score=""
+        travel_zone=""
+        if connectivity_div:
+            # Extracting connectivity rating
+                    # price_blocks = soup.find_all('div', class_=lambda x: x and 'bn' in x and 'de' in x and 'e1' in x,
+                    #                 attrs={'data-baseweb': 'block'})
+            connectivity_info = connectivity_div.find('div', class_=lambda x: x and 'ig_a' in x and 'dz_a' in x)
+            if connectivity_info:
+                transport_text = connectivity_info.find('p', class_='hu_a dz_e').text.strip()
+                transport_score = connectivity_info.find('div', class_='hs_a es_c').text.strip()
+                print("####################################in scraper @##########################################################s")
+                print(f"{transport_text}: {transport_score}")
+            
+            # Extracting travel zone
+            travel_zone_info = connectivity_div.find('div', class_='ig_a dz_a es_g')
+            if travel_zone_info:
+                travel_text = travel_zone_info.find('p', class_='hu_a dz_e').text.strip()
+                travel_zone = travel_zone_info.find('div', class_='hs_a').text.strip()
+                print(f"{travel_text}: {travel_zone}")
+
+                # Adding connectivity information to dictionary
+                connectivity_data = {
+                    "connectivity to public transport": transport_score,
+                    "travel zone": travel_zone
+                }
+        else:
+            print("Connectivity to public transport information is not available.")
+
+        # Find all the station details and group them by station name
+        for station in soup.find_all('li', class_='er_c'):
+            # station_name = station.find('p', class_='er_e').text.strip()
+            station_name = station.find('p', class_='er_e').contents[0].strip()
+            # Use regex to capture everything before the numeric value
+            # match = re.match(r'^(.*?)(?=\s*\d+(\.\d+)?\s*miles?)', station_name)
+
+            # Get the matched group if it exists
+            # station_name = match.group(1).strip() if match else ""
+            distance = station.find('span', class_='er_f').text.strip()
+            # lines = [line.text.strip() for line in station.find_all('span', class_='line_class')]  # Adjust class as necessary
+            # Extract lines
+            lines = [span.text.strip() for span in station.find_all('span', class_='er_j')]
+            s = ""
+            if len(lines) > 1:
+                for i, line in enumerate(lines):
+                    s += line
+                    if i < len(lines) - 1:
+                        s += ","
+            else:
+                s = lines[0]
+            print(s)
+            # Add to the stations_data dictionary
+            stations_data.append({
+                "station_name": station_name,
+                "distance": distance,
+                "lines": s
+            })
+
+        # Create DataFrame for connectivity
+        connectivity_df = pd.DataFrame([connectivity_data])
+
+        # Create DataFrame for stations
+        stations_df = pd.DataFrame(stations_data, columns=['station_name', 'distance', 'lines'])
+
+        # connectivity_df = pd.DataFrame([connectivity_data])
+        # stations_df = pd.DataFrame(stations_data)
+
+        print(connectivity_df.head)
+        print(stations_df.head)
+        return connectivity_df,stations_df
+
 
     def store_data_as_json(self, postcode, restaurant_data, pub_data,demo_df):
         """Stores restaurant and pub data in JSON format against the given postcode."""
@@ -217,6 +356,7 @@ class Crystal:
 
         # Convert to DataFrame and clean Percentage column
         self.df_demographic = pd.DataFrame(data)
+        print("------------------------------------------------------",self.df_demographic)
         self.df_demographic['Percentage'] = self.df_demographic['Percentage'].replace('%', '', regex=True).astype(float)
 
     def display_data(self):
@@ -448,6 +588,12 @@ def fetch_amenities(postcode,url,demo_df):
     web_helper.store_data_as_json(postcode=postcode,restaurant_data=df_restaurants,pub_data=df_pubs,demo_df=demo_df)
     # return df_restaurants
 
+# def fetch_transport(postcode,url):
+#     print(postcode)
+
+    # web_helper.click_show_more_restaurants()
+
+
 
 
 if __name__ == "__main__":
@@ -457,5 +603,6 @@ if __name__ == "__main__":
     demo_df=fetch_demographics(url)
     url=f"https://crystalroof.co.uk/report/postcode/{postcode}/amenities"
     fetch_amenities(postcode,url,demo_df)
-
+    url=f"https://crystalroof.co.uk/report/postcode/{postcode}/transport"
+    fetch_transport(postcode,url)
     # Usage example

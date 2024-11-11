@@ -43,7 +43,8 @@ class JsonDataHandler:
                     'restaurants': {},
                     'pubs': {},
                     'income':{},
-                    'occupation':{}
+                    'occupation':{},
+                    'transport':{'connectivity':{},'stations':{}}
                 }
             }
         
@@ -85,7 +86,7 @@ class JsonDataHandler:
         # Save changes to JSON
         self.save_json()
 
-    def add_crystal_data(self, postcode, ethnicity_data, restaurants, pubs, df_household_income, df_neighbourhood_income, full_address, df_occupation, occupation_location_text):
+    def add_crystal_data(self, postcode, ethnicity_data, restaurants, pubs, df_household_income, df_neighbourhood_income, full_address, df_occupation, occupation_location_text,connectivity_df,stations_df):
         try:
             print("______________________________________________in add crsyal json _____________________________________________________________________________________")
             # Ensure postcode exists and strip any extra whitespace
@@ -102,7 +103,8 @@ class JsonDataHandler:
                     'restaurants': {},
                     'pubs': {},
                     'income': {},      # Initialize income here
-                    'occupation': {}   # Initialize occupation here
+                    'occupation': {},  # Initialize occupation here
+                    'transport':{'connectivity':{},'stations':{}}
                 }
 
             # Access crystal data directly
@@ -152,10 +154,46 @@ class JsonDataHandler:
 
             self.postcodes[postcode]['address'] = full_address
 
-            # Save changes to JSON
-            print(self.postcodes[postcode])
+
+            if 'transport' not in current_crystal_data:
+                current_crystal_data['transport'] ={'connectivity':{},'stations':{}}
+            #add transport data 
+            print(connectivity_df,stations_df)
+            if connectivity_df is not None and not connectivity_df.empty:
+                connectivity_dict = {
+                    'connectivity to public transport': connectivity_df.iloc[0]['connectivity to public transport'],
+                    'travel zone': connectivity_df.iloc[0]['travel zone']
+                }
+                print(connectivity_dict)
+                current_crystal_data['transport']['connectivity']=connectivity_dict
+
+
+
+            if stations_df is not None and not stations_df.empty:
+                station_data_list = []
+    
+                # Iterate over each row in stations_df to populate station details
+                for _, row in stations_df.iterrows():
+                    station_data = {
+                        'station_name': row['station_name'],  # Assuming the station name is the index of the DataFrame
+                        'distance': row['distance'],
+                        'lines': row['lines']
+                    }
+                    station_data_list.append(station_data)
+                
+                print("_______________________________________________________________",station_data_list)    
+                    # Add station data to `current_crystal_data`
+                # Ensure 'transport' key exists in current_crystal_data
+
+
+
+                current_crystal_data['transport']['stations']= station_data_list #update(station_data_list)
+                    # Save changes to JSON
 
             self.save_json()
+            print(self.postcodes[postcode],self.postcodes[postcode]['address'])
+            for key, value in current_crystal_data.items() :
+                print (key, value)
 
         except Exception as e:
             print(f"Error occurred while adding crystal data for postcode {postcode}: {str(e)}")
