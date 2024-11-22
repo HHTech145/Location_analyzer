@@ -40,6 +40,9 @@ from io import StringIO
 nest_asyncio.apply()
 #Load Google maps scraper 
 from google_maps_scraper.manager import XLSXHandler
+#####################
+from Google_map_scraper.scraper.main import gmap_Scraper
+
 
 from dataclasses import dataclass, asdict, field
 # Load the environment variables from .env file
@@ -270,11 +273,17 @@ def fetch_occupation(url):
         # url = 'https://example.com'  # Replace with the actual URL
         web_helper = WebDriverHelper(url)
         web_helper.load_page()
-        web_helper.click_on_borough_button()
+        try:
+            web_helper.click_on_borough_button()
+            df_occupations,location_text = web_helper.get_occupation_data()
+            print(df_occupations,location_text) 
+            return df_occupations,location_text   
+        except Exception as e:
+            df_occupations=pd.DataFrame()
+            location_text=""
+            return df_occupations,location_text
 
-        df_occupations,location_text = web_helper.get_occupation_data()
-        print(df_occupations,location_text) 
-        return df_occupations,location_text   
+
     except Exception as e:
         print(e)
 
@@ -290,6 +299,8 @@ def fetch_transport(url):
         return connectivity_df,stations_df   
     except Exception as e:
         print(e)
+
+
 
 
 # def fetch_unviersities_data(full_Address):
@@ -375,7 +386,7 @@ def fetch_transport(url):
 
 
 
-def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,postcode):
+def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income, full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall,postcode):
     # postcode_info_path =os.path.join(os.path.dirname(__file__), os.environ.get('demographic_file_path'))
     postcode_info_path = os.environ.get('demographic_file_path') #'demographic_data/updated_outer_demog_sales_data_radius_1.xlsx'
     folder_path = os.environ.get('prediction_results_path') #'results'
@@ -386,7 +397,7 @@ def run_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood
 
     plotter = PredictionsPlotter(postcode_info_path, folder_path, output_file_name)
     
-    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,postcode)
+    plotter.run(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall,postcode)
 
 
 
@@ -423,7 +434,7 @@ def fetch_universities(full_address,postcode):
     try:
         # df_universities=XLSXHandler.laod_xlsx(postcode)
         df_universities = XLSXHandler().load_xlsx(postcode)
-        print(df_universities)
+        # print(df_universities)
         # print(df_universities.head)
         if not df_universities.empty:
             df_universities=df_universities[['name','address','url']]
@@ -450,6 +461,36 @@ def fetch_universities(full_address,postcode):
     except Exception as e:
         print(traceback.format_exc())
 
+
+
+def create_google_maps_query(address):
+    # Split the address by commas and strip whitespace
+    parts = [part.strip() for part in address.split(',')]
+    
+    # Ensure there are at least two parts: one for locality and one for postcode
+    if len(parts) >= 2:
+        # The last part is assumed to be the postcode
+        postcode = parts[-1]
+        
+        # The part before the postcode is assumed to be the locality (e.g., town or village)
+        locality = parts[-2]
+        
+        # Split the locality by spaces and take only the last word
+        last_word_of_locality = locality.split()[-1]
+        
+        # Combine last word of locality and postcode to create the location string
+        location = f"{last_word_of_locality}, {postcode}"
+    else:
+        # Fallback to use the full address if it's not in the expected format
+        location = address
+
+    # Build the query for Google Maps
+    # location
+    return location
+
+
+
+
 # Define the endpoint
 @app.get("/process_postcode/")
 async def process_postcode(postcode: str):
@@ -468,13 +509,34 @@ async def process_postcode(postcode: str):
         print("file_path:",file_path)
     print("file path ",file_path)
     sheet_name = 'Sheet1'
-
+    full_address=""
     # Check and update data
     try:
         # if validate_uk_postcode(postcode):
         postcode=postcode.upper()
+        postcode_crystal = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
         loop = asyncio.get_event_loop()
 
+
+        ######################  Check if postcode exists in Crystal data  #####################################
+
+        # Database configuration
+        db_config = {
+            "host": "localhost",
+            "user": "htech_ai",
+            "password": "Htech786##",
+            "database": "test_db"  # Assuming you have a database to connect to
+        }
+
+        # Path to your JSON file
+        json_file_path = "D:/work/automation/free_map_tools/final/Location_analyzer/app/postcode_data.json"
+
+        # Example usage
+        postcode_handler = PostcodeDataHandler(db_config, json_file_path)
+
+        crystal_data=postcode_handler.if_postcode_exists(postcode=postcode)
+        postcode_handler.close_database()
+        #######################################################################################################################################################
         # Run scraper and predictions in a separate thread using ThreadPoolExecutor
         # try:
         df = await loop.run_in_executor(executor, check_data, postcode, file_path, sheet_name)
@@ -487,181 +549,276 @@ async def process_postcode(postcode: str):
         print("___________ average prediction",average_prediction,type(average_prediction))
         handler.add_postcode_info(postcode=postcode, radius=1.61, min_prediction=min_prediction,average_prediction=average_prediction,max_prediction=max_prediction)
         handler.add_demographics(postcode,df)
-        # Fetch data from Crystal
-        postcode_crystal = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
-        url_demographics = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
-        demo_df = await loop.run_in_executor(executor, fetch_demographics, url_demographics)
-        # handler.add_ethnicity(postcode, demo_df)
 
-        url_amenities = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
-        df_restaurants, df_pubs = await loop.run_in_executor(executor, fetch_amenities, postcode, url_amenities, demo_df)
-        # handler.add_nearby_restaurants(postcode, df_restaurants)
-        # handler.add_nearby_pubs(postcode, df_pubs)
-        # handler.add_crystal_data(postcode, ethnicity_data=demo_df, restaurants=df_restaurants, pubs=df_pubs)
-        # print(handler.to_json())
-        url_affluence= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence'
-        df_household_income,df_neighbourhood_income,full_address = await loop.run_in_executor(executor, fetch_affluence, url_affluence)
-        print(df_household_income,df_neighbourhood_income)
+        ############################################################# psotcode check #########################################################################
 
-        # df_universities = fetch_universities_data(full_address)
+
+        # demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,df_occupation,connectivity_df,stations_df=pd.DataFrame()
+            # Create DataFrames (replace with actual logic)
+        demo_df = pd.DataFrame()
+        df_restaurants = pd.DataFrame()
+        df_pubs = pd.DataFrame()
+        df_household_income = pd.DataFrame()
+        df_neighbourhood_income = pd.DataFrame()
+        df_occcupation = pd.DataFrame()
+        connectivity_df = pd.DataFrame()
+        stations_df = pd.DataFrame()
+        ###########
+        
+        occupation_location_text=""
+        full_address=""
+        print("------------44444444444444444444444444444444444444444444444444444----------------------------------",full_address)
+        if crystal_data:
+            print("yes")
+            postcode_info = postcode_handler.get_postcode_info(postcode)
+
+            # df = pd.DataFrame(data)
+            # Unpack postcode_info
+            postcode, radius, prediction, address,min_prediction,max_prediction,demographics, crystal_data = postcode_info
+            print("------------555555555555555555555555555555555555555555555555555555555555555----------------------------------",full_address)
+            ##########################################
+            demo_data=crystal_data.get('ethnicity', {})
+
+            demo_list = [
+            {"Demographics": key, "Percentage": value}
+            for key, value in demo_data.items()]
+
+            demo_df = pd.DataFrame(demo_list)
+
+            ##########################################
+
+            # df_restaurants, df_pubs=crystal_data.get('restaurants', {}),crystal_data.get('pubs', {})
+
+            # Extract income data
+
+            rest_data=crystal_data.get('restaurants', {})
+
+            demo_list = [
+            {"Restaurant": key, "Distance": value}
+            for key, value in rest_data.items()]
+
+            df_restaurants = pd.DataFrame(demo_list)
+            
+            #####
+            pub_data=crystal_data.get('pubs', {})
+
+            demo_list = [
+            {"Pub": key, "Distance": value}
+            for key, value in pub_data.items()]
+
+            df_pubs = pd.DataFrame(demo_list)
+
+            ###########################################################
+
+            income_data= crystal_data.get('income', {})
+            if income_data:
+                if  "average_income" in income_data and "rating" in income_data:
+                    # Create df_household_income only if the necessary keys are present
+                    df_household_income = pd.DataFrame({
+                        "income": [income_data["average_income"]],
+                        "rating": [income_data["rating"]]
+                    })
+
+                    # Generalized approach to create df_neighbourhood_income
+                    # Exclude "average_income" and "rating" since they belong to df_household_income
+                    neighbourhood_data = {
+                        "Area": [key for key in income_data if key not in ["average_income", "rating"]],
+                        "Income": [income_data[key] for key in income_data if key not in ["average_income", "rating"]]
+                    }
+
+                    df_neighbourhood_income = pd.DataFrame(neighbourhood_data)
+                else:
+                    # If income_data is empty or does not contain required keys, send empty response
+                    df_household_income = pd.DataFrame(columns=["income", "rating"])
+                    df_neighbourhood_income = pd.DataFrame(columns=["Area", "Income"])
+            else:
+                url_affluence= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence'
+                df_household_income,df_neighbourhood_income,full_address = await loop.run_in_executor(executor, fetch_affluence, url_affluence)
+                handler.add_crystal_data(
+                    postcode=postcode,  # Postcode
+                    household_income_data=df_household_income,  # Only pass ethnicity data
+                    neighbourhood_income_data=df_neighbourhood_income
+                )
+
+            # print(df_neighbourhood_income.head())
+            # df_household_income,df_neighbourhood_income=crystal_data.get('income', {})
+            full_address= address
+
+            # df_occcupation,occupation_location_text
+            # Extract occupation data
+            occupation_data = crystal_data.get('occupation', {})
+            if occupation_data:
+
+                # Generalized approach to create df_occupation
+                occupation_list = [
+                    {"Occupation": key, "Percentage": value}
+                    for key, value in occupation_data.items()
+                    if key != "occupation_location_text"
+                ]
+
+                df = pd.DataFrame(occupation_list)
+                df_occcupation=df
+                # print(df_occcupation)
+
+                # Extract occupation_location_text
+                occupation_location_text = occupation_data["occupation_location_text"]
+            else:
+                ###### occupation #########################
+                url_occupation= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
+                df_occcupation,occupation_location_text = await loop.run_in_executor(executor, fetch_occupation, url_occupation)
+                # print(df_occcupation,occupation_location_text)
+                handler.add_crystal_data(
+                    postcode=postcode,  # Postcode
+                    occupation_data=df_occcupation,  # Only pass ethnicity data
+                    occupation_location_text=occupation_location_text
+                )
+  
+
+            # connectivity_df,stations_df
+            transport_data = crystal_data.get('transport', {})
+            if transport_data:
+                    
+                # Extract connectivity data and convert to DataFrame
+                connectivity_data = transport_data["connectivity"]
+                connectivity_df = pd.DataFrame([connectivity_data])
+
+                # Extract stations data and convert to DataFrame
+                stations_data = transport_data["stations"]
+                stations_df = pd.DataFrame(stations_data)
+            else:
+                ###### transport #########################
+                url_transport= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/transport'
+                connectivity_df,stations_df = await loop.run_in_executor(executor, fetch_transport, url_transport)
+                # print(connectivity_df,stations_df)  
+                handler.add_crystal_data(
+                    postcode=postcode,  # Postcode
+                    connectivity_data=connectivity_df,  # Transport connectivity data (optional)
+                    stations_data=stations_df
+                )
+        else:
+            print("No ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+
+            # Fetch data from Crystal
+            # postcode_crystal = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
+            url_demographics = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
+            demo_df = await loop.run_in_executor(executor, fetch_demographics, url_demographics)
+            # handler.add_ethnicity(postcode, demo_df)
+
+            url_amenities = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
+            df_restaurants, df_pubs = await loop.run_in_executor(executor, fetch_amenities, postcode, url_amenities, demo_df)
+            # handler.add_nearby_restaurants(postcode, df_restaurants)
+            # handler.add_nearby_pubs(postcode, df_pubs)
+            # handler.add_crystal_data(postcode, ethnicity_data=demo_df, restaurants=df_restaurants, pubs=df_pubs)
+            # print(handler.to_json())
+            url_affluence= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence'
+            df_household_income,df_neighbourhood_income,full_address = await loop.run_in_executor(executor, fetch_affluence, url_affluence)
+            # print(df_household_income.columns,df_neighbourhood_income.columns)
+
+            ###### occupation #########################
+            url_occupation= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
+            df_occcupation,occupation_location_text = await loop.run_in_executor(executor, fetch_occupation, url_occupation)
+            # print(df_occcupation,occupation_location_text)
+
+            ###### transport #########################
+            url_transport= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/transport'
+            connectivity_df,stations_df = await loop.run_in_executor(executor, fetch_transport, url_transport)
+            # print(connectivity_df,stations_df)        
+            #Save crystal data to json 
+            # handler.add_crystal_data(postcode, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df)
+            
+            handler.add_crystal_data(
+                postcode=postcode,  # Postcode
+                full_address=full_address,  # Optional full address
+                ethnicity_data=demo_df,  # Ethnicity data (required)
+                restaurants_data=df_restaurants,  # Restaurants data (required)
+                pubs_data=df_pubs,  # Pubs data (required)
+                household_income_data=df_household_income,  # Household income data (required)
+                neighbourhood_income_data=df_neighbourhood_income,  # Neighborhood income data (required)
+                occupation_data=df_occcupation,  # Occupation data (optional)
+                occupation_location_text=occupation_location_text,  # Optional occupation location text
+                connectivity_data=connectivity_df,  # Transport connectivity data (optional)
+                stations_data=stations_df  # Transport stations data (optional)
+            )
+
+
+            #####################################################################################################################################################################
+            
+        print("------------44444444444444444444444444444444444444444444444444444----------------------------------",full_address)
+        print( "________________________________in main _______________________________________",full_address)
+
+
+        ##########################################  Google  Maps Scraping Section #########################################################################################
+        ###################################################  Universities Section  ########################################################################
+
+    
+        df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")
         # print(df_universities)
-        # df_universities =  fetch_universities_data(full_address)
-        # print(df_universities)
-
-
-        # parts = [part.strip() for part in full_address.split(',')]
-        # result = ', '.join(parts[-2:])
-
-        # # Input parameters as strings
-        # search_list = f"Universisites near {result}"
-        # total = 20  # Number of listings to scrape
-
-        # # Run scraper.py in a subprocess and capture output
-        # # result = subprocess.run(
-        # #     ["D:/work/automation/free_map_tools/final/Location_analyzer/venv/Scripts/python", "google_maps.py", search_list],
-        # #     stdout=subprocess.PIPE,
-        # #     text=True
-        # # )
-
-
-        # # Specify the path to the Python executable in your virtual environment
-        # # venv_python_path = r"D:/work/automation/free_map_tools/final/Location_analyzer/venv/Scripts/python"
-        
-        # # The script you want to run
-        # script_path = "google_maps.py"
-        
-        
-
-        # # Run the subprocess with the virtual environment's Python interpreter
-        # result = subprocess.run(
-        #     ['python', script_path, search_list],
-        #     stdout=subprocess.PIPE,
-        #     stderr=subprocess.PIPE,
-        #     text=True
-        # )
-        # # df_universities=XLSXHandler.laod_xlsx(postcode)
-        # df_universities = XLSXHandler().load_xlsx(postcode)
-        # print(df_universities.head)
-
-        # df_universities=df_universities[['name','address','url']]
-
-        #############################################################################################################################################
-
-        # df_universities=fetch_universities(full_address,postcode)
-
-                # df_universities=XLSXHandler.laod_xlsx(postcode)
-
-        
-
-
-
-
-
-
-
-        df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/output").load_xlsx(postcode)
-        print(df_universities)
         # print(df_universities.head)
         if df_universities is not None:
-            df_universities=df_universities[['name','address','url']]
+            df_universities=df_universities[['name','address','distance','time','url']]
             # return df_universities
         else:
 
-            parts = [part.strip() for part in full_address.split(',')]
-            result = ', '.join(parts[-2:])
-
-            # Input parameters as strings
-            search_list = f"Universisites near {result}"
-            # total = 20  # Number of listings to scrape    
-            # The script you want to run
-            script_path = "google_maps.py"
-            # Run the subprocess with the virtual environment's Python interpreter
-            result = subprocess.run(
-                ['python', script_path, search_list],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/output").load_xlsx(postcode)
+            s=gmap_Scraper()
+            s.startscraping(searchQuery=f"Universities near {postcode},England",output_file=f"universities near {postcode}")
+            df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")     
 
         ################################## Tourists ###########################################################
-        df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)
-        print(df_tourists)
+        # df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)
+        df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")  
+        # print(df_tourists)
         # print(df_tourists.head)
         if df_tourists is not None:
             df_tourists=df_tourists[['name','address','url','reviews_count']]
             # return df_universities
         else:
-
-            parts = [part.strip() for part in full_address.split(',')]
-            result = ', '.join(parts[-2:])
-
-            # Input parameters as strings
-            search_list = f"tourist places near {result}"
-            # total = 20  # Number of listings to scrape    
-            # The script you want to run
-            script_path = "google_maps_tourist.py"
-            # Run the subprocess with the virtual environment's Python interpreter
-            result = subprocess.run(
-                ['python', script_path, search_list],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)        
+            s=gmap_Scraper()
+            s.startscraping(searchQuery=f"tourist attractions near {postcode},England",output_file=f"tourist attractions near {postcode}")
+            df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")        
         # df_tourits_places= 
         ##############################################################################################################################################
 
+        ####################################################### High Schools Section ##################################################################
 
 
 
-            # return df_universities
+        df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")
+        # print(df_high_schools)
+        # print(df_high_schools.head)
+        if df_high_schools is not None:
+            df_high_schools=df_high_schools[['name','address','url']]
+            # return df_high_schools
+        else:
 
-####################################################################################
+            s=gmap_Scraper()
+            s.startscraping(searchQuery=f"high school in {postcode},England",output_file=f"High schools near {postcode}")
+            df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")     
 
-        # df_universities= pd.DataFrame(columns=['name', 'address', 'url'])
-            # Check if result is successful before parsing
-        # if result.returncode == 0:
-        #     # Replace `result.stdout` with your actual JSON string from the output
-        #     result_stdout = result.stdout.strip()  # Remove any trailing newlines or extra spaces
-        #     print(result_stdout)
-        #     # Try loading JSON directly
-        #     try:
-        #         # Convert the string to a dictionary first
-        #         json_data = json.loads(result_stdout)
-        #         print("---------------------------------------------------",json_data)
-        #         # Now load it into a DataFrame
-        #         df_universities = pd.DataFrame(json_data)
-        #         print(df_universities)
-        #     except json.JSONDecodeError as e:
-        #         print("JSON decode error:", e)
-        #         # print("Output received:", result_stdout)
-        #     # df_universities = pd.read_json(result.stdout)
-        #     print(df_universities)
-        # else:
-        #     print("Subprocess failed:", result.stderr)
 
-        # search_list = ["restaurant near me"]
-        # total = 10  # Number of listings to scrape
+        ################################################################################################################################################
+        # print(df_high_schools)
 
-        # business_list = await loop.run_in_executor(asyncio.run(GoogleMapsScraper.scrape(search_list, total)))
-        # print(business_list)
+        ####################################################### Shopping Mall Section ##################################################################
 
-        ###### occupation #########################
-        url_occupation= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
-        df_occcupation,occupation_location_text = await loop.run_in_executor(executor, fetch_occupation, url_occupation)
-        print(df_occcupation,occupation_location_text)
 
-        ###### transport #########################
-        url_transport= f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/transport'
-        connectivity_df,stations_df = await loop.run_in_executor(executor, fetch_transport, url_transport)
-        print(connectivity_df,stations_df)        
-        #Save crystal data to json 
-        handler.add_crystal_data(postcode, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df)
-        print( "________________________________in main _______________________________________",full_address)
+
+        df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")
+        # print(df_high_schools)
+        # print(df_high_schools.head)
+        if df_shopping_mall is not None:
+            df_shopping_mall=df_shopping_mall[['name','address','url']]
+            # return df_shopping_mall
+        else:
+
+            s=gmap_Scraper()
+            s.startscraping(searchQuery=f"Shopping mall near {postcode},England",output_file=f"Shopping mall near {postcode}")
+            df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")     
+
+
+
 
         # Generate plot
-        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,postcode)
+        await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall,postcode)
 
         # save data 
         save_data_to_database(postcode=postcode)
@@ -700,6 +857,7 @@ async def get_average_prediction(postcode: str):
 
     json_data=postcode_handler.get_average_prediction_from_db(postcode=postcode)
     print(json_data)
+    postcode_handler.close_database()  
     return json_data
     
 

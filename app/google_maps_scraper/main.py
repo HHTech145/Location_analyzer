@@ -186,7 +186,7 @@ class GoogleMapsScraper:
         print("search_list",search_list)
         with sync_playwright() as p:
             print("in playwirght ____________________________________________________")
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             print("_ in opening page -----------------------------------------")
             page.goto("https://www.google.com/maps", timeout=60000)
@@ -339,7 +339,7 @@ class GoogleMapsScraper:
 
 def main():
     # Input parameters as strings
-    search_list = ["restaurant near me"]
+    search_list = ["Universities near Plasnewydd, CF24 3BJ"] 
     total = 10  # Number of listings to scrape
 
     # Scrape business data
@@ -352,5 +352,5 @@ def main():
     # business_list.save_to_csv("google_maps_data")
 
 if __name__ == "__main__":
-    # main()
-    GoogleMapsScraper.scrape(sys.argv[1],total=20)
+    main()
+    # GoogleMapsScraper.scrape(sys.argv[1],tota/l=20)

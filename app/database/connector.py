@@ -131,6 +131,14 @@ class Database:
                     FOREIGN KEY (postcode) REFERENCES postcodes(postcode)
                 );
                 """
+
+                """
+                CREATE TABLE IF NOT EXISTS gmaps_Universities (
+                    postcode VARCHAR(10) PRIMARY KEY,
+                    universities JSON,
+                    FOREIGN KEY (postcode) REFERENCES postcodes(postcode)
+                );
+                """
             ]
             # Execute all SQL statements
             for sql in sql_statements:
@@ -294,6 +302,25 @@ class Database:
             print(f"Error inserting or updating crystal_transport: {e}")
         finally:
             cursor.close()
+
+
+    def insert_or_update_universities(self,postcode,unviersities):
+        """Insert or update data into the gmaps_universities table"""
+        try:
+            cursor = self.connection.cursor()
+            unviersities_json = json.dumps(unviersities)
+            sql = """INSERT INTO gmaps_Universities (postcode, universities) 
+                    VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE universities = VALUES(universities)"""
+            cursor.execute(sql, (postcode, unviersities_json))
+            self.connection.commit()
+            print(f"Upserted data into gmaps_universities: {postcode}")
+        except Error as e:
+            print(f"Error inserting or updating gmaps_universities: {e}")
+        finally:
+            cursor.close()        
+
+
 
     # def insert_into_postcodes(self, postcode, radius, prediction, address):
     #     """Insert data into the postcodes table"""

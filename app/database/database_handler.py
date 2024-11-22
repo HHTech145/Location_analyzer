@@ -119,6 +119,19 @@ class PostcodeDataHandler:
         except Exception as e:
             print(traceback.format_exc())
 
+    def if_postcode_exists(self,postcode):
+        postcode=postcode.strip()
+        """Retrieve information for the given postcode from the loaded JSON data."""
+
+        # Search for the postcode in the JSON data
+        try:
+            if postcode in self.postcode_data:
+                return True
+            else:
+                False
+        except Exception as e:
+            print(traceback.format_exc())
+
     def close_database(self):
         """Close the database connection."""
         self.db.close()

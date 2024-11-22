@@ -604,5 +604,5 @@ if __name__ == "__main__":
     url=f"https://crystalroof.co.uk/report/postcode/{postcode}/amenities"
     fetch_amenities(postcode,url,demo_df)
     url=f"https://crystalroof.co.uk/report/postcode/{postcode}/transport"
-    fetch_transport(postcode,url)
+    # fetch_transport(postcode,url)
     # Usage example

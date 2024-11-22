@@ -66,7 +66,7 @@ class XLSXHandler:
         full_paths = [os.path.join(directory, f) for f in files]
         return max(full_paths, key=os.path.getmtime)
     
-    def check_postcode_in_files(self, postcode_with_space):
+    def check_postcode_in_files(self, postcode_with_space,subject):
         # Replace space with underscore in the postcode
         postcode_with_underscore = postcode_with_space.replace(" ", "_")
         
@@ -80,18 +80,19 @@ class XLSXHandler:
         # Check each file to see if the postcode (with underscores) is in the file name
         matching_files = []
         for file in files:
-            if postcode_with_underscore in file:
-                matching_files.append(file)
+            if subject in file:
+                if postcode_with_underscore in file:
+                        matching_files.append(file)
         
         # Return matching files
         return matching_files
     
-    def load_xlsx(self, postcode_with_space):  # Fixed the typo here
+    def load_xlsx(self, postcode_with_space,subject):  # Fixed the typo here
         # Replace space with underscore
         postcode_with_underscore = postcode_with_space.replace(" ", "_")
 
         # Get matching files
-        matching_files = self.check_postcode_in_files(postcode_with_underscore)
+        matching_files = self.check_postcode_in_files(postcode_with_underscore,subject)
 
         if matching_files:
             # Load the first matching file into a DataFrame

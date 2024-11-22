@@ -1,0 +1,70 @@
+"""
+This module contain the code for saving the scraped data
+"""
+
+
+import pandas as pd
+# from .communicator import Communicator
+from .settings import OUTPUT_PATH
+import os
+from .error_codes import ERROR_CODES
+
+
+class DataSaver:
+    def __init__(self) -> None:
+        self.outputFormat = "excel" #Communicator.get_output_format()
+
+    def save(self, datalist,output_file_name):
+        print("Excecute last datasaver.py ------------------------------")
+        """
+        This function will save the data that has been scrapped.
+        This can be call if any error occurs while scraping , or if scraping is done successfully.
+        In both cases we have to save the scraped data.
+        """
+        print("output_file_name:---------------------------------------------------------------------------------------------",output_file_name)
+
+        if len(datalist) > 0:
+            # Communicator.show_message("Saving the scraped data")
+
+            dataFrame = pd.DataFrame(datalist)
+            totalRecords = dataFrame.shape[0]
+
+            filename =  output_file_name.replace(' ', '_') #"/gms output"
+
+            if self.outputFormat == "excel":
+                extension = ".xlsx"
+            elif self.outputFormat == "csv":
+                extension = ".csv"
+            elif self.outputFormat == "json":
+                extension = ".json"
+
+            joinedPath = OUTPUT_PATH + filename + extension
+            print(joinedPath)
+
+            if os.path.exists(joinedPath):
+                index = 1
+                while True:
+                    filename = f"/gms output{index}"
+
+                    joinedPath = OUTPUT_PATH + filename + extension
+
+                    if os.path.exists(joinedPath):
+                        index += 1
+
+                    else:
+                        break
+            if self.outputFormat == "excel":
+                dataFrame.to_excel(joinedPath, index=False)
+            elif self.outputFormat == "csv":
+                dataFrame.to_csv(joinedPath, index=False)
+
+            elif self.outputFormat == "json":
+                dataFrame.to_json(joinedPath, indent=4, orient="records")
+
+            # Communicator.show_message(f"Hurrah! Scraped data successfully saved! Total records saved: {totalRecords}. If you're loving this free tool, consider fueling us with a coffee! Your support helps us keep democratizing automation. ☕️ Support us here: https://www.buymeacoffee.com/zubdata")
+            
+        else:
+            print(f"Oops! Could not scrape the data because you did not scrape any record.",{ERROR_CODES['NO_RECORD_TO_SAVE']})
+            # Communicator.show_error_message("Oops! Could not scrape the data because you did not scrape any record.",{ERROR_CODES['NO_RECORD_TO_SAVE']})
+
+

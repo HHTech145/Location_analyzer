@@ -52,7 +52,7 @@ class PredictionModel:
 
             # Run predictions
             predictions = self.loaded_model.predict(new_df)
-            print("predictions________________________________________",predictions)
+            # print("predictions________________________________________",predictions)
 
             # Store the results
             for pred in predictions:

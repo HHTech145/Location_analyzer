@@ -192,7 +192,7 @@ class GoogleMapsScraper:
 
         with sync_playwright() as p:
             # print("in playwirght ____________________________________________________")
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             # print("_ in opening page -----------------------------------------")
             page.goto("https://www.google.com/maps", timeout=60000)
