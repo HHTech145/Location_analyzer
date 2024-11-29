@@ -276,6 +276,8 @@ class PredictionsPlotter:
         tourists_columns=[
             TableColumn(field="name", title="name"),
             TableColumn(field="address", title="address"),
+            TableColumn(field="distance", title="distance"),
+            TableColumn(field="time", title="time"),
             TableColumn(field="reviews_count", title="reviews_count",formatter=self.get_html_formatter('reviews_count')),
             TableColumn(field="url", title="url",formatter =  HTMLTemplateFormatter(template = '<a href="<%= url %>"><%= value %></a>'))             
         ]
@@ -285,6 +287,8 @@ class PredictionsPlotter:
         high_schools_columns=[
             TableColumn(field="name", title="name"),
             TableColumn(field="address", title="address"),
+            TableColumn(field="distance", title="distance"),
+            TableColumn(field="time", title="time"),
             TableColumn(field="url", title="url",formatter =  HTMLTemplateFormatter(template = '<a href="<%= url %>"><%= value %></a>'))             
         ]
         high_school_table = DataTable(source=high_schools_source, columns=high_schools_columns, width=1200, height=500) 
@@ -293,6 +297,8 @@ class PredictionsPlotter:
         shopping_mall_columns=[
             TableColumn(field="name", title="name"),
             TableColumn(field="address", title="address"),
+            TableColumn(field="distance", title="distance"),
+            TableColumn(field="time", title="time"),
             TableColumn(field="url", title="url",formatter =  HTMLTemplateFormatter(template = '<a href="<%= url %>"><%= value %></a>'))             
         ]
         shooping_mall_table = DataTable(source=shopping_mall_source, columns=shopping_mall_columns, width=1200, height=500) 

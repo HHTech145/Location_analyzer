@@ -24,7 +24,7 @@ class Directions:
     def init_driver(self):
             options = uc.ChromeOptions()
             # if self.headlessMode:
-            options.headless = False
+            options.headless = True
 
             prefs = {"profile.managed_default_content_settings.images": 2}
             options.add_argument('--incognito')
@@ -63,22 +63,43 @@ class Directions:
             # directions = self.driver.find_element(
                 # By.XPATH,"/html/body/div[2]/div[3]/div[8]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[4]/div[1]/button")
             button.click()
-            sleep(5)
+            sleep(1)
         except Exception as e:
             print("in directions click error ",e)
 
 
+    def click_driving_button(self):
+        sleep(3)
+        try:
+            # Wait until the "Driving" button is clickable
+            driving_button = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@data-tooltip='Driving']"))
+            )
+            
+            # Click the "Driving" button
+            driving_button.click()
+            print("Driving button clicked successfully.")
+            
+        except Exception as e:
+            print("An error occurred while clicking the Driving button:", e)
+        sleep(5)
     # find place
     def find(self,postcode):
-        sleep(6)
+        sleep(5)
         # find = self.driver.find_element(
         # By.XPATH, "/html/body/div[2]/div[3]/div[8]/div[3]/div[1]/div[2]/div/div[3]/div[1]/div[1]/div[2]/div[1]/div/input")
         # find.send_keys(postcode)
         # Locate the input field using a reliable locator
-        input_field = self.driver.find_element(By.CSS_SELECTOR, "input.tactile-searchbox-input")
-        input_field.send_keys(postcode)
-        input_field.send_keys(Keys.ENTER)
-        sleep(5)
+        print("in find function -----------------------------------------------------")
+        try:
+            input_field = self.driver.find_element(By.CSS_SELECTOR, "input.tactile-searchbox-input")
+            input_field.send_keys(postcode)
+            sleep(3)
+            input_field.send_keys(Keys.ENTER)
+            sleep(2)
+        except Exception as e:
+            print(e)
+
         # self.driver
         # search = self.driver.find_element(
         # By.XPATH, "/html/body/jsl/div[3]/div[9]/div[3]/div[1]/div[2]/div/div[3]/div[1]/div[1]/div[2]/button[1]")
@@ -107,33 +128,70 @@ class Directions:
 
             results = []
 
-                # Process each div
             # Process each div
+            # Process each div
+        
+                
             for div in divs:
-                # Safely find the span and its aria-label
-                travel_mode_span = div.find('span', class_='Os0QJc google-symbols')
-                travel_mode = travel_mode_span['aria-label'] if travel_mode_span and travel_mode_span.has_attr('aria-label') else None
+                try:    
+                    # Safely find the travel mode span and its aria-label
+                    # travel_mode_span = div.find('span', class_='Os0QJc google-symbols')
+                    # travel_mode = travel_mode_span['aria-label'] if travel_mode_span and travel_mode_span.has_attr('aria-label') else "N/A"
 
-                if travel_mode and travel_mode != "Transit":  # Exclude Transit
-                    # Safely find and extract text from other elements
-                    time_div = div.find('div', class_='Fk3sm')
-                    time = time_div.text.strip() if time_div else "N/A"
+                    # # Safely find and extract text from other elements
+                    # time_div = div.find('div', class_='Fk3sm')
+                    # time = time_div.text.strip() if time_div else "N/A"
 
-                    distance_div = div.find('div', class_='ivN21e')
-                    distance = distance_div.text.strip() if distance_div else "N/A"
+                    # distance_div = div.find('div', class_='ivN21e')
+                    # distance = distance_div.text.strip() if distance_div else "N/A"
 
-                    route_h1 = div.find('h1')
-                    route = route_h1.text.strip() if route_h1 else "N/A"
+                    # route_h1 = div.find('h1', class_='VuCHmb')
+                    # route = route_h1.text.strip() if route_h1 else "N/A"
 
-                    results.append({'travel_mode': travel_mode, 'time': time, 'distance': distance, 'route': route})
-                else:
-                    results.append({'travel_mode': '', 'time': '', 'distance': '', 'route': ''})
+                    # # Append only if valid data exists or if travel mode isn't "Transit"
+                    # # if travel_mode != "Transit":
+                    # # distance != "N/A":
+                    # results.append({
+                    #     'travel_mode': travel_mode,
+                    #     'time': time,
+                    #     'distance': distance,
+                    #     'route': route
+                    # })
+                    # # else:
+                    # #     # Optionally include empty values for "Transit" modes if desired
+                    # #     results.append({
+                    # #         'travel_mode': 'Transit (excluded)',
+                    # #         'time': 'N/A',
+                    # #         'distance': 'N/A',
+                    # #         'route': 'N/A'
+                    # #     })
 
-            # Output the filtered results
-            for result in results:
-                print(result)
+                    # Safely find the span and its aria-label
+                    travel_mode_span = div.find('span', class_='Os0QJc google-symbols')
+                    travel_mode = travel_mode_span['aria-label'] if travel_mode_span and travel_mode_span.has_attr('aria-label') else None
 
-            
+                    if travel_mode and travel_mode != "Transit":  # Exclude Transit
+                        # Safely find and extract text from other elements
+                        time_div = div.find('div', class_='Fk3sm')
+                        time = time_div.text.strip() if time_div else "N/A"
+
+                        distance_div = div.find('div', class_='ivN21e')
+                        distance = distance_div.text.strip() if distance_div else "N/A"
+
+                        route_h1 = div.find('h1')
+                        route = route_h1.text.strip() if route_h1 else "N/A"
+
+                        results.append({'travel_mode': travel_mode, 'time': time, 'distance': distance, 'route': route})
+                        
+                    else:
+                        results.append({'travel_mode': '', 'time': '', 'distance': '', 'route': ''})
+
+                    # Output the filtered results
+                    for result in results:
+                        print(result)
+
+                except Exception as e:
+                    continue
 
             # # Extract required details
             # details = {
@@ -145,10 +203,24 @@ class Directions:
 
             # # Print the extracted details
             # print(details)
-            return results[0]
+                    # Only append if distance is valid (not "N/A")
+            print(results)
+            # sleep(2000)
+            if results:
+                print("23232323233232323##@2222222222222222222333333333333333222##################################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",results[0])
+                return results[0]
+            else:
+                return results.append({'travel_mode': '', 'time': '', 'distance': '', 'route': ''}) 
 
         except Exception as e:
+            self.driver.quit()
+            print("23232323233232323##@2222222222222222222333333333333333222################ in exception ##################@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             print(f"An error occurred: {e}")
+        # finally:
+        #     self.driver.quit()
+        #     print("in finally -----------=========================--------------=-=-=-=-==============")
+        #     return {'travel_mode': '', 'time': '', 'distance': '', 'route': ''}
+            
 
 
     def process(self,url,postcode):
@@ -157,22 +229,25 @@ class Directions:
         self.click_directions()
         # postcode="LU5 6GZ"
         self.find(postcode)
+        self.click_driving_button()
         details=self.kilometers()
         # self.driver.quit()
+        print("details:",details)
         return details
 
 
 
-# # Usage
-# if __name__ == "__main__":
-    # direction_obj=Directions()
-    # url="https://www.google.co.uk/maps/place/Central+Bedfordshire+College+-+Dunstable+Campus/data=!4m7!3m6!1s0x48764f03d1ab3ad7:0x5ad239e4e08889a1!8m2!3d51.890093!4d-0.5188035!16s%2Fm%2F02q32ds!19sChIJ1zqr0QNPdkgRoYmI4OQ50lo?authuser=0&hl=en&rclk=1"
+# Usage
+if __name__ == "__main__":
+
+    direction_obj=Directions()
+    url="https://www.google.co.uk/maps/place/The+Bedford+Sixth+Form/data=!4m7!3m6!1s0x4877b125d54c070d:0x9d7827190e40afd7!8m2!3d52.1393816!4d-0.471825!16s%2Fm%2F012nmgq_!19sChIJDQdM1SWxd0gR169ADhkneJ0?authuser=0&hl=en&rclk=1"
     # direction_obj.driver.get(url)
     # direction_obj.click_directions()
-    # postcode="LU5 6GZ"
+    postcode="MK42 9EP"
     # direction_obj.find(postcode)
     # direction_obj.kilometers()
-    # details=direction_obj.process(url,postcode)
+    details=direction_obj.process(url,postcode)
 
 
 

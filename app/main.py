@@ -490,6 +490,79 @@ def create_google_maps_query(address):
 
 
 
+def process_google_maps_scraping(postcode):
+
+    print(" in gopogle maps --------------------------------------------------------------------------------------------------------------------")
+    ##########################################  Google  Maps Scraping Section #########################################################################################
+    ###################################################  Universities Section  ########################################################################
+
+
+    df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")
+    # print(df_universities)
+    # print(df_universities.head)
+    if df_universities is not None:
+        df_universities=df_universities[['name','address','distance','time','url']]
+        # return df_universities
+    else:
+
+        s=gmap_Scraper()
+        s.startscraping(searchQuery=f"Universities near {postcode},England",output_file=f"universities near {postcode}")
+        df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")     
+
+    ################################## Tourists ###########################################################
+    # df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)
+    df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")  
+    # print(df_tourists)
+    # print(df_tourists.head)
+    if df_tourists is not None:
+        df_tourists=df_tourists[['name','address','distance','time','url','reviews_count']]
+        # return df_universities
+    else:
+        s=gmap_Scraper()
+        s.startscraping(searchQuery=f"tourist attractions near {postcode},England",output_file=f"tourist attractions near {postcode}")
+        df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")        
+    # df_tourits_places= 
+    ##############################################################################################################################################
+
+    ####################################################### High Schools Section ##################################################################
+
+
+
+    df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")
+    # print(df_high_schools)
+    # print(df_high_schools.head)
+    if df_high_schools is not None:
+        df_high_schools=df_high_schools[['name','address','distance','time','url']]
+        # return df_high_schools
+    else:
+
+        s=gmap_Scraper()
+        s.startscraping(searchQuery=f"high school in {postcode},England",output_file=f"High schools near {postcode}")
+        df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")     
+
+
+    ################################################################################################################################################
+    # print(df_high_schools)
+
+    ####################################################### Shopping Mall Section ##################################################################
+
+
+
+    df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")
+    # print(df_high_schools)
+    # print(df_high_schools.head)
+    if df_shopping_mall is not None:
+        df_shopping_mall=df_shopping_mall[['name','address','distance','time','url']]
+        # return df_shopping_mall
+    else:
+
+        s=gmap_Scraper()
+        s.startscraping(searchQuery=f"Shopping mall near {postcode},England",output_file=f"Shopping mall near {postcode}")
+        df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")     
+
+
+    return df_universities,df_tourists,df_high_schools,df_shopping_mall
+
 
 # Define the endpoint
 @app.get("/process_postcode/")
@@ -751,71 +824,71 @@ async def process_postcode(postcode: str):
         ###################################################  Universities Section  ########################################################################
 
     
-        df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")
-        # print(df_universities)
-        # print(df_universities.head)
-        if df_universities is not None:
-            df_universities=df_universities[['name','address','distance','time','url']]
-            # return df_universities
-        else:
+        # df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")
+        # # print(df_universities)
+        # # print(df_universities.head)
+        # if df_universities is not None:
+        #     df_universities=df_universities[['name','address','distance','time','url']]
+        #     # return df_universities
+        # else:
 
-            s=gmap_Scraper()
-            s.startscraping(searchQuery=f"Universities near {postcode},England",output_file=f"universities near {postcode}")
-            df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")     
+        #     s=gmap_Scraper()
+        #     s.startscraping(searchQuery=f"Universities near {postcode},England",output_file=f"universities near {postcode}")
+        #     df_universities = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"universities")     
 
-        ################################## Tourists ###########################################################
-        # df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)
-        df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")  
-        # print(df_tourists)
-        # print(df_tourists.head)
-        if df_tourists is not None:
-            df_tourists=df_tourists[['name','address','url','reviews_count']]
-            # return df_universities
-        else:
-            s=gmap_Scraper()
-            s.startscraping(searchQuery=f"tourist attractions near {postcode},England",output_file=f"tourist attractions near {postcode}")
-            df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")        
-        # df_tourits_places= 
-        ##############################################################################################################################################
+        # ################################## Tourists ###########################################################
+        # # df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/tourist_output").load_xlsx(postcode)
+        # df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")  
+        # # print(df_tourists)
+        # # print(df_tourists.head)
+        # if df_tourists is not None:
+        #     df_tourists=df_tourists[['name','address','url','reviews_count']]
+        #     # return df_universities
+        # else:
+        #     s=gmap_Scraper()
+        #     s.startscraping(searchQuery=f"tourist attractions near {postcode},England",output_file=f"tourist attractions near {postcode}")
+        #     df_tourists = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"tourist")        
+        # # df_tourits_places= 
+        # ##############################################################################################################################################
 
-        ####################################################### High Schools Section ##################################################################
-
-
-
-        df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")
-        # print(df_high_schools)
-        # print(df_high_schools.head)
-        if df_high_schools is not None:
-            df_high_schools=df_high_schools[['name','address','url']]
-            # return df_high_schools
-        else:
-
-            s=gmap_Scraper()
-            s.startscraping(searchQuery=f"high school in {postcode},England",output_file=f"High schools near {postcode}")
-            df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")     
-
-
-        ################################################################################################################################################
-        # print(df_high_schools)
-
-        ####################################################### Shopping Mall Section ##################################################################
+        # ####################################################### High Schools Section ##################################################################
 
 
 
-        df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")
-        # print(df_high_schools)
-        # print(df_high_schools.head)
-        if df_shopping_mall is not None:
-            df_shopping_mall=df_shopping_mall[['name','address','url']]
-            # return df_shopping_mall
-        else:
+        # df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")
+        # # print(df_high_schools)
+        # # print(df_high_schools.head)
+        # if df_high_schools is not None:
+        #     df_high_schools=df_high_schools[['name','address','url']]
+        #     # return df_high_schools
+        # else:
 
-            s=gmap_Scraper()
-            s.startscraping(searchQuery=f"Shopping mall near {postcode},England",output_file=f"Shopping mall near {postcode}")
-            df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")     
+        #     s=gmap_Scraper()
+        #     s.startscraping(searchQuery=f"high school in {postcode},England",output_file=f"High schools near {postcode}")
+        #     df_high_schools = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"schools")     
+
+
+        # ################################################################################################################################################
+        # # print(df_high_schools)
+
+        # ####################################################### Shopping Mall Section ##################################################################
 
 
 
+        # df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")
+        # # print(df_high_schools)
+        # # print(df_high_schools.head)
+        # if df_shopping_mall is not None:
+        #     df_shopping_mall=df_shopping_mall[['name','address','url']]
+        #     # return df_shopping_mall
+        # else:
+
+        #     s=gmap_Scraper()
+        #     s.startscraping(searchQuery=f"Shopping mall near {postcode},England",output_file=f"Shopping mall near {postcode}")
+        #     df_shopping_mall = XLSXHandler(folder_path="D:/work/automation/free_map_tools/final/Location_analyzer/app/Google_map_scraper/output").load_xlsx(postcode,"Shopping")     
+
+
+        df_universities,df_tourists,df_high_schools,df_shopping_mall=await loop.run_in_executor(executor,process_google_maps_scraping,postcode)
 
         # Generate plot
         await loop.run_in_executor(executor, run_plot, demo_df, df_restaurants, df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall,postcode)

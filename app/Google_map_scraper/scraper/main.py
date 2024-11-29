@@ -4,7 +4,7 @@ from .scraper import Backend
 class gmap_Scraper:
     def __init__(self):
             self.outputFormatValue='.xlsx'
-            self.headlessMode=False
+            self.headlessMode=True
             # self.startscraping()
 
     def startscraping(self,searchQuery,output_file):
@@ -16,5 +16,6 @@ class gmap_Scraper:
             )
 
             backend.mainscraping()
+            backend.driver.quit()
             
 

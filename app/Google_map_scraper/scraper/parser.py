@@ -101,7 +101,6 @@ class Parser(Base):
             print(f"Error occured while parsing a location. Error is: {str(e)}.", ERROR_CODES['ERR_WHILE_PARSING_DETAILS'] )
             # Communicator.show_error_message(f"Error occured while parsing a location. Error is: {str(e)}.", ERROR_CODES['ERR_WHILE_PARSING_DETAILS'] )
             
-
     def main(self, allResultsLinks,output_file_name):
         print("Execute second parser.py -------------------------------------------------------------length:",len(allResultsLinks),allResultsLinks[0])
         # Communicator.show_message("Scrolling is done. Now going to scrape each location")
@@ -121,8 +120,7 @@ class Parser(Base):
 
         except Exception as e:
             print(f"Error occured while parsing the locations. Error: {str(e)}")
-            # Communicator.show_message(f"Error occured while parsing the locations. Error: {str(e)}")
-            
+            # Communicator.show_message(f"Error occured while parsing the locations. Error: {str(e)}")            
         finally:
             self.add_directions(output_file_name)
             self.init_data_saver()
