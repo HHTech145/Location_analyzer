@@ -98,6 +98,7 @@ class Backend(Base):
             # ==========================================
 
             self.openingurl(url=link_of_page)
+            print(url)
             sleep(10)
             # element=self.driver.find_element(By.CLASS_NAME, "searchboxinput")
             # element.send_keys(querywithplus)

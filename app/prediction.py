@@ -59,7 +59,7 @@ class PredictionModel:
                 # print(pred,type(pred))
                 predictions_list.append({
                     'Date': current_date,
-                    'Prediction': pred+3000.0
+                    'Prediction': pred+4000.0
                 })
 
             # Move to the next date

@@ -108,9 +108,251 @@ class PredictionsPlotter:
         
         return HTMLTemplateFormatter(template=template)
 
+    def create_plot(self,demographics_df,restaurants_df,pubs_df,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df):
+        print("in plot ______________________________________________________")
+        output_file(self.output_file_name, title="Predictions Plot", mode="inline")
+        
+        if self.combined_df.empty or self.combined_df[['Prediction', 'Average Prediction']].isnull().any().any():
+            print("Error: DataFrame is empty or contains NaN values.")
+            return
+
+        p = figure(x_axis_type='datetime', width=1500, height=800,
+                   title="Predictions of Postcode with Demographics",
+                   x_axis_label='Date', y_axis_label='Prediction')
+
+        unique_postcodes = self.combined_df['Postcode'].unique()
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                  '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+        lines = []
+        for i, postcode in enumerate(unique_postcodes):
+            postcode_data = self.combined_df[self.combined_df['Postcode'] == postcode]
+            source = ColumnDataSource(postcode_data)
+
+            if postcode_data[['Prediction', 'Average Prediction']].isnull().any().any():
+                print(f"Warning: Data for postcode {postcode} contains NaN values.")
+                continue
+
+            line = p.line(x='Date', y='Prediction', source=source, line_width=2,
+                          color=colors[i % len(colors)], legend_label=postcode)
+            self.add_hover_tool(p, source)
+            lines.append(line)
+
+        checkbox = CheckboxGroup(labels=list(unique_postcodes), active=list(range(len(unique_postcodes))))
+        postcode_info_div_1 = Div(text="", width=600, css_classes=["postcode-info"])
+        postcode_info_div_2 = Div(text="", width=600, css_classes=["postcode-info"])
+
+        self.add_interactivity(p, unique_postcodes, lines, checkbox, postcode_info_div_1, postcode_info_div_2)
 
 
-    def create_plot(self,demographics_df,restaurants_df,pubs_df,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall):
+        # self.postcode_info_df()
+        self.postcode_info_df[['unemployment_rate','working','unemployed','ab','c1/c2','de', 'white', 'non-white']] = self.postcode_info_df[['unemployment_rate','working','unemployed','ab','c1/c2','de', 'white', 'non-white']].apply(lambda x: (x * 100).round(2))
+
+        demographics = self.postcode_info_df.columns.tolist()
+        values = self.postcode_info_df.iloc[0].tolist()
+
+        # Create a new DataFrame for the converted format with string keys
+        converted_df = pd.DataFrame({
+            'Demographics': demographics,
+            'Values': values
+        })
+        # print(self.postcode_info_df)
+
+        postcode_info_source = ColumnDataSource(converted_df)
+
+
+        postcode_info_columns = [
+            TableColumn(field="Demographics", title="Demographics"),
+            TableColumn(field="Values", title="Values")
+        ]
+        postcode_info_table = DataTable(source=postcode_info_source, columns=postcode_info_columns, width=800, height=500)
+
+        ###############################################
+        # df_neighbourhood_income=pd.DataFrame()
+        if df_neighbourhood_income.empty:
+            print("Warning: df_neighbourhood_income is empty.")
+            last_row = None  # Or provide a default value
+        else:
+            # last_row = df_neighbourhood_income.iloc[-1]
+            last_row = df_neighbourhood_income.iloc[-1]
+            df_neighbourhood_income = df_neighbourhood_income.drop(df_neighbourhood_income.index[-1])
+
+
+
+        # Converting the data to ColumnDataSources
+        demographics_source = ColumnDataSource(demographics_df)
+        restaurants_source = ColumnDataSource(restaurants_df)
+        pubs_source = ColumnDataSource(pubs_df)
+        income_source= ColumnDataSource(df_neighbourhood_income)
+        occupation_source= ColumnDataSource(df_occcupation)
+        connectivity_source=ColumnDataSource(connectivity_df)
+        stations_source=ColumnDataSource(stations_df)
+
+        # print(df_universities)
+
+        # Defining columns for the Demographics table
+        demographics_columns = [
+            TableColumn(field="Demographics", title="Demographics",formatter=self.get_html_formatter('Demographics')),
+            TableColumn(field="Percentage", title="Percentage")
+        ]
+        demographics_table = DataTable(source=demographics_source, columns=demographics_columns, width=800, height=500)
+
+        # Defining columns for the Restaurants table
+        restaurants_columns = [
+            TableColumn(field="Restaurant", title="Restaurant"),
+            TableColumn(field="Distance", title="Distance")
+        ]
+        restaurants_table = DataTable(source=restaurants_source, columns=restaurants_columns, width=800, height=500)
+
+        # Defining columns for the Pubs table
+        pubs_columns = [
+            TableColumn(field="Pub", title="Pub"),
+            TableColumn(field="Distance", title="Distance")
+        ]
+        pubs_table = DataTable(source=pubs_source, columns=pubs_columns, width=800, height=600)
+
+
+        # Defining columns for Affluence Table 
+        income_columns = [
+            TableColumn(field="Area", title="Area"),
+            TableColumn(field="Income", title="Income")
+        ]
+        income_table = DataTable(source=income_source, columns=income_columns, width=800, height=150)
+
+        # Defining columns for Occupation Table 
+        occupation_columns = [
+            TableColumn(field="Occupation", title="Occupation",formatter=self.get_html_formatter_occupation('Occupation')),
+            TableColumn(field="Percentage", title="Percentage")
+        ]
+        occupation_table = DataTable(source=occupation_source, columns=occupation_columns, width=800, height=200)        
+
+        # defining columns for transport
+
+        connectivity_columns=[
+            TableColumn(field="connectivity to public transport", title="connectivity to public transport"),
+            TableColumn(field="travel zone", title="travel zone")            
+        ]
+        connectivity_table = DataTable(source=connectivity_source, columns=connectivity_columns, width=800, height=50) 
+
+        
+        station_columns=[
+            TableColumn(field="station_name", title="station_name"),
+            TableColumn(field="distance", title="distance"),
+            TableColumn(field="lines", title="lines")             
+        ]
+        station_table = DataTable(source=stations_source, columns=station_columns, width=1000, height=400) 
+
+
+
+        # last_row = df_neighbourhood_income.iloc[-1]
+        # df_neighbourhood_income = df_neighbourhood_income.drop(df_neighbourhood_income.index[-1])
+        # print("_________________________________in plot _______________________________________________________________",df_household_income,df_neighbourhood_income,df_neighbourhood_income.columns,"))))",income_table)
+
+    # Create headers for the tables
+        plot_header=Div(text=f"<h1>{full_address}</h1>", width=800)
+        postcode_info_header=Div(text="<h3>Postcode area Demographics</h3>", width=800)
+        demographics_header = Div(text="<h3>Ethnicity,Religion,Households</h3>", width=800)
+        restaurants_header = Div(text="<h3>Restaurants Near Postcode</h3>", width=800)
+        pubs_header = Div(text="<h3>Bars, pubs, clubs</h3>", width=800)
+
+        result=""
+        new_address=""
+        if full_address is None:
+            print("Warning: full_address is None. Skipping split operation.")
+            full_address = ""  # Provide a default value if needed
+            result=""
+        else:
+            parts = [part.strip() for part in full_address.split(',')]
+            result = ', '.join(parts[-2:])
+            parts = [part.strip() for part in full_address.split(',')]
+
+            # Further split the postal code
+            postal_code_parts = parts[-1].split()
+            postcode_part=postal_code_parts[0]+"+"+postal_code_parts[1]
+
+            # Rearrange the parts
+            new_address = f"{parts[4]}+{parts[3]}+{postcode_part}+,+{parts[0]}"
+            print("________________________________",new_address)
+
+        income_header=Div(text=f"<h1 h1 style='border: 1px solid #ccc; border-radius: 8px; padding: 15px; background-color: #df9429; color: black;'>Income Section </h1>", width=800)
+        if not df_neighbourhood_income.empty:
+            income_header = Div(
+                text=f"""
+                <h1>Income Section</h1>
+                <div style="border: 1px solid #ccc; border-radius: 8px; padding: 15px; background-color: orange; color: black;"> 
+                    <p style="margin: 0; font-weight: bold;">Mean household income estimate before tax</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <p style="margin: 0; font-size: 24px; font-weight: bold;">{df_household_income['income'][0]}</p>
+                        <span style="font-size: 24px; font-weight: bold;">{df_household_income['rating'][0]}</span>
+                    </div>
+                    <p style="margin-top: 15px;font-size:15px;">{last_row['Income']}</p>
+                </div>
+                """,
+                width=800
+            )
+
+        occupation_header=Div(
+            
+            text=f"""
+            <h1>Occupation section</h1>
+            <div style="border: 1px solid #ccc; border-radius: 6px; padding: 15px; background-color: PaleVioletRed; color: black;"> 
+                <p style="margin: 0; font-weight: bold;">Occupation</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <p style="margin: 0; font-size: 18px; ">{occupation_location_text}</p>
+                </div>
+            </div>
+            """,
+            width=800
+            
+            )
+
+        # income_header= Div(text=f"<h3>Income section </h3><h2>Testing in progress</h2><h2>Mean Household Income {df_household_income['income'][0]}</h2><p style='font-size:41px;color:red;'>Rating {df_household_income['rating'][0]}</p><h2 style='font-size:20px;color:green;'>{last_row['Income']}</h2>", width=800)
+        # income_footer = Div(text=f"<h3>{last_row['Income']}</h3>", width=800)
+
+        # print("__in plot ",last_row,income_footer)
+        # Split the string by commas
+        # Split the string by commas
+        # new_address=""
+        print("-----------------------------------------------full address",full_address,type(full_address))
+        # if full_address is not None:
+        
+
+    # Use the public URL for Google Maps (without API key)
+        # google_maps_url = "https://www.google.com/maps/place/High+St,+Southall+UB1+3DA,+UK/@51.5109211,-0.3772825,17z/data=!3m1!4b1!4m6!3m5!1s0x48760d54eef03057:0x68d5d16d4d902882!8m2!3d51.5109469!4d-0.3747371!16s%2Fg%2F1tf9mqyj?entry=ttu&g_ep=EgoyMDI0MTAxNi4wIKXMDSoASAFQAw%3D%3D"
+        # url="https://maps.google.com/maps?q=chennai&t=&z=13&ie=UTF8&iwloc=&output=embed"
+        # Google Maps iframe without API key
+        google_maps_header=Div(text=f"<h2>Google Maps Section</h2>", width=300,height=100)
+        google_maps_div = Div(
+            text=f"""
+                <div class="mapouter"><div class="gmap_canvas"><iframe width="1200" height="800" id="gmap_canvas" src="https://maps.google.com/maps?q={new_address}&t=&z=17&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe></div></div>
+            """, 
+            width=1000, height=800
+        )
+
+        transport_header = Div(text='''<h1><svg width="20" height="20" viewBox="0 0 32 24"><path d="M16 0A12 12 0 004.68 8h4.4a8 8 0 0113.8 0h4.4A12 12 0 0016 0zM27.8 10h-4.08a7.86 7.86 0 01.26 2 8.23 8.23 0 01-.25 2h4.08a11.9 11.9 0 000-4zM16 19.98a8 8 0 01-6.91-4h-4.4a12 12 0 0022.62 0h-4.4a8 8 0 01-6.9 4zm-8-8a7.86 7.86 0 01.26-2H4.17a11.9 11.9 0 000 4h4.08a8.23 8.23 0 01-.25-2z" fill="#ED7C23"></path><path d="M29.98 10H2a2 2 0 00-2 2 2 2 0 002 2h27.98a2 2 0 002-2 2 2 0 00-2-2z" fill="#213e90"></path></svg> Transport Section</h1>
+                               ''', width=800)
+        layout = column(
+            plot_header,
+            checkbox, 
+            p,
+            row(), 
+            postcode_info_header,postcode_info_table, # postcode section 
+            demographics_header, demographics_table, # demographics section
+            restaurants_header, restaurants_table, # restraunts section 
+            pubs_header, pubs_table, # pubs section 
+            income_header,income_table, # income section 
+            occupation_header,occupation_table,
+            transport_header,connectivity_table,station_table,
+            google_maps_header,google_maps_div
+                # Google Maps iframe without API key
+        )
+        save(layout)
+        # show(layout)
+
+    # def add_google_maps(self):
+    #     <div style="overflow:hidden;max-width:100%;width:500px;height:500px;"><div id="google-maps-display" style="height:100%; width:100%;max-width:100%;"><iframe style="height:100%;width:100%;border:0;" frameborder="0" src="https://www.google.com/maps/embed/v1/place?q=UB1+3DA&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"></iframe></div><a class="googl-ehtml" rel="nofollow" href="https://www.bootstrapskins.com/themes" id="grab-map-data">premium bootstrap themes</a><style>#google-maps-display img{max-width:none!important;background:none!important;font-size: inherit;font-weight:inherit;}</style></div>
+
+    def create_plot_google_maps(self,demographics_df,restaurants_df,pubs_df,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall):
         print("in plot ______________________________________________________")
         output_file(self.output_file_name, title="Predictions Plot", mode="inline")
         
@@ -420,9 +662,6 @@ class PredictionsPlotter:
         save(layout)
         # show(layout)
 
-    # def add_google_maps(self):
-    #     <div style="overflow:hidden;max-width:100%;width:500px;height:500px;"><div id="google-maps-display" style="height:100%; width:100%;max-width:100%;"><iframe style="height:100%;width:100%;border:0;" frameborder="0" src="https://www.google.com/maps/embed/v1/place?q=UB1+3DA&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"></iframe></div><a class="googl-ehtml" rel="nofollow" href="https://www.bootstrapskins.com/themes" id="grab-map-data">premium bootstrap themes</a><style>#google-maps-display img{max-width:none!important;background:none!important;font-size: inherit;font-weight:inherit;}</style></div>
-
 
     def add_hover_tool(self, p, source):
         hover = HoverTool(
@@ -589,11 +828,17 @@ class PredictionsPlotter:
                 # Output to an HTML file and display
         output_file("bootstrap_styled_prediction_plot.html")
         save(layout)
-    
-    def run(self,demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall,postcode):
+
+    def run_google_maps(self,demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall,postcode):
         self.load_predictions(postcode)
         self.process_predictions(postcode)
-        self.create_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall)
+        self.create_plot_google_maps(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,df_universities,df_tourists,df_high_schools,df_shopping_mall)
+
+
+    def run(self,demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df,postcode):
+        self.load_predictions(postcode)
+        self.process_predictions(postcode)
+        self.create_plot(demo_df,df_restaurants,df_pubs,df_household_income,df_neighbourhood_income,full_address,df_occcupation,occupation_location_text,connectivity_df,stations_df)
 
 # # Usage
 if __name__ == "__main__":

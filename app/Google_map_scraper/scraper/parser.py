@@ -5,7 +5,7 @@ from .datasaver import DataSaver
 from .base import Base
 from .common import Common
 from .directions import Directions
-
+import validators
 class Parser(Base):
 
     def __init__(self, driver) -> None:
@@ -142,13 +142,18 @@ class Parser(Base):
                 print(len(self.finalData))
                 print("count______________________",i,self.finalData[i])
                 direction_obj=Directions()
-                details=direction_obj.process(url=self.finalData[i]['url'],postcode=postcode)
-                print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",details,details.get('distance'))
-                self.finalData[i]['distance']= details['distance']
-                self.finalData[i]['time'] = details['time']
-                # print(self.f)
-                direction_obj.driver.quit()
-                direction_obj = None
+                try:
+                    value=self.finalData[i]['url']
+                    if isinstance(value, str) and validators.url(value):
+                        details=direction_obj.process(url=self.finalData[i]['url'],postcode=postcode)
+                        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",details,details.get('distance'))
+                        self.finalData[i]['distance']= details['distance']
+                        self.finalData[i]['time'] = details['time']
+                        # print(self.f)
+                        direction_obj.driver.quit()
+                        direction_obj = None
+                except Exception as e:
+                    continue
             print(self.finalData)
         except Exception as e:
             print(e)
