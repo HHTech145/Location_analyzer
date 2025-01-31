@@ -112,6 +112,15 @@ class PredictionsPlotter:
         print("in plot ______________________________________________________")
         output_file(self.output_file_name, title="Predictions Plot", mode="inline")
         
+        # if self.combined_df.empty or self.combined_df[['Prediction', 'Average Prediction']].isnull().any().any():
+        #     print("Error: DataFrame is empty or contains NaN values.")
+        #     return
+        # Check if self.combined_df is None or invalid
+        if self.combined_df is None:
+            print("Error: combined_df is None.")
+            return
+
+        # Check if self.combined_df is empty or contains NaN values
         if self.combined_df.empty or self.combined_df[['Prediction', 'Average Prediction']].isnull().any().any():
             print("Error: DataFrame is empty or contains NaN values.")
             return
@@ -183,6 +192,7 @@ class PredictionsPlotter:
         demographics_source = ColumnDataSource(demographics_df)
         restaurants_source = ColumnDataSource(restaurants_df)
         pubs_source = ColumnDataSource(pubs_df)
+        # if df_neighbourhood_income:
         income_source= ColumnDataSource(df_neighbourhood_income)
         occupation_source= ColumnDataSource(df_occcupation)
         connectivity_source=ColumnDataSource(connectivity_df)
@@ -210,8 +220,6 @@ class PredictionsPlotter:
             TableColumn(field="Distance", title="Distance")
         ]
         pubs_table = DataTable(source=pubs_source, columns=pubs_columns, width=800, height=600)
-
-
         # Defining columns for Affluence Table 
         income_columns = [
             TableColumn(field="Area", title="Area"),
@@ -584,6 +592,8 @@ class PredictionsPlotter:
 
         shopping_mall_header=Div(text=f"<h1 h1 style='border: 1px solid #ccc; border-radius: 8px; padding: 15px; background-color: #df9429; color: black;'>Shopping Malls Near {result}</h1>", width=800)
         income_header=Div(text=f"<h1 h1 style='border: 1px solid #ccc; border-radius: 8px; padding: 15px; background-color: #df9429; color: black;'>Income Section </h1>", width=800)
+        
+        print(df_neighbourhood_income)
         if not df_neighbourhood_income.empty:
             income_header = Div(
                 text=f"""

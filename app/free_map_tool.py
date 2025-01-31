@@ -31,6 +31,8 @@ class WebDriverManager:
         options.add_argument("--disable-gpu")  # Optional, for better performance
         options.add_argument("--window-size=1920x1080")  # Optional, set window size
         options.add_argument("--window-position=-2400,-2400")
+        options.add_argument("--log-level=3")  # Suppress logging
+        options.add_argument("--disable-logging")  # Disable all logging
         # options.add_argument('--user-data-dir=C:/Users/USER/AppData/Local/Google/Chrome/User Data/Default')
 
         # Use a unique temp directory for each session
@@ -75,11 +77,17 @@ class WebDriverManager:
         input_field.send_keys(postcode)
 
     def click_on_search(self):
-        search_button = WebDriverWait(self.driver, 100).until(
-            EC.visibility_of_element_located((By.XPATH, '//*[@id="locationSearchButton"]'))
-        )
-        search_button.click()
-        sleep(10)
+        # sleep(10)
+        try:
+            print("----------------------in click on search")
+            search_button = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//*[@id="locationSearchButton"]'))
+            )
+            search_button.click()
+            print("button has been clicked!!!!")
+            sleep(30)
+        except Exception as e:
+            print(e)
 
     def click_on_save_csv(self):
         sleep(4)
@@ -382,6 +390,7 @@ class WebScraper:
         driver_manager.input_radius_and_postcode(postcode,radius)
         sleep(2)
         driver_manager.click_on_search()
+        sleep(5)
         driver_manager.click_on_save_csv()
         sleep(2)
         driver_manager.quit()

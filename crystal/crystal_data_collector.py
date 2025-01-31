@@ -15,6 +15,8 @@ import tempfile
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import traceback
+from temp import TempCleaner
+
 class WebDriverHelper:
     def __init__(self, url):
         self.url = url
@@ -30,6 +32,9 @@ class WebDriverHelper:
         options.add_argument("--window-size=1920x1080")  # Optional, set window size
         options.add_argument("--window-position=-2400,-2400")
         options.add_argument('--start-maximized')
+        options.add_argument("--disable-application-cache")
+        options.add_argument("--disk-cache-size=0")
+        options.add_argument("--incognito")
         temp_dir = tempfile.mkdtemp()
         options.add_argument(f"--user-data-dir={temp_dir}")
 
@@ -642,6 +647,12 @@ def fetch_amenities(postcode,url,demo_df):
     print(df_pubs)
 
     web_helper.close()
+
+        # Specify the temp directory path
+    temp_directory = r"C:\Users\USER\AppData\Local\Temp"
+
+    # Create an instance of the TempCleaner class, which will automatically start the cleaning process
+    TempCleaner(temp_directory)
 
     web_helper.store_data_as_json(postcode=postcode,restaurant_data=df_restaurants,pub_data=df_pubs,demo_df=demo_df)
     # return df_restaurants

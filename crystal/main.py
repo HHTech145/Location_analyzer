@@ -32,10 +32,9 @@ from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import nest_asyncio
 import subprocess
+from temp import TempCleaner
 
 executor = ThreadPoolExecutor()
-
-
 #Crystal Roof fetching
 
 def fetch_demographics(url):
@@ -122,40 +121,43 @@ async def process_postcode(postcode: str, handler):
         postcode = postcode.upper()
         postcode_crystal = re.sub(r"\s+", "", postcode, flags=re.UNICODE)
 
-        # Construct the URLs for the required data
-        url_demographics = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
-        demo_df = fetch_demographics(url_demographics)  # Removed await
+        check_postcode=handler.if_postcode_exists(postcode)
+        if not check_postcode:
+            # Construct the URLs for the required data
+            url_demographics = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/demographics"
+            demo_df = fetch_demographics(url_demographics)  # Removed await
 
-        url_amenities = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
-        df_restaurants, df_pubs = fetch_amenities(postcode, url_amenities, demo_df)  # Removed await
+            url_amenities = f"https://crystalroof.co.uk/report/postcode/{postcode_crystal}/amenities"
+            df_restaurants, df_pubs = fetch_amenities(postcode, url_amenities, demo_df)  # Removed await
 
-        url_affluence = f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence'
-        df_household_income, df_neighbourhood_income, full_address = fetch_affluence(url_affluence)  # Removed await
+            url_affluence = f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence'
+            df_household_income, df_neighbourhood_income, full_address = fetch_affluence(url_affluence)  # Removed await
 
-        url_occupation = f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
-        df_occupation, occupation_location_text = fetch_occupation(url_occupation)  # Removed await
+            url_occupation = f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/affluence?tab=occupation'
+            df_occupation, occupation_location_text = fetch_occupation(url_occupation)  # Removed await
 
-        url_transport = f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/transport'
-        connectivity_df, stations_df = fetch_transport(url_transport)  # Removed await
+            url_transport = f'https://crystalroof.co.uk/report/postcode/{postcode_crystal}/transport'
+            connectivity_df, stations_df = fetch_transport(url_transport)  # Removed await
 
-        # Adding collected data to the handler (e.g., for storing in JSON)
-        handler.add_crystal_data(
-            postcode=postcode,
-            full_address=full_address,
-            ethnicity_data=demo_df,
-            restaurants_data=df_restaurants,
-            pubs_data=df_pubs,
-            household_income_data=df_household_income,
-            neighbourhood_income_data=df_neighbourhood_income,
-            occupation_data=df_occupation,
-            occupation_location_text=occupation_location_text,
-            connectivity_data=connectivity_df,
-            stations_data=stations_df
-        )
+
+            # Adding collected data to the handler (e.g., for storing in JSON)
+            handler.add_crystal_data(
+                postcode=postcode,
+                full_address=full_address,
+                ethnicity_data=demo_df,
+                restaurants_data=df_restaurants,
+                pubs_data=df_pubs,
+                household_income_data=df_household_income,
+                neighbourhood_income_data=df_neighbourhood_income,
+                occupation_data=df_occupation,
+                occupation_location_text=occupation_location_text,
+                connectivity_data=connectivity_df,
+                stations_data=stations_df
+            )
     except Exception as e:
         print(f"Error processing postcode {postcode}: {e}")
 
-        
+# The function that processes multiple postcodes concurrently
 async def process_multiple_postcodes(postcodes: list, handler, max_concurrent: int = 20):
     semaphore = asyncio.Semaphore(max_concurrent)
 
@@ -166,6 +168,13 @@ async def process_multiple_postcodes(postcodes: list, handler, max_concurrent: i
     tasks = [semaphore_task(postcode) for postcode in postcodes]
     await asyncio.gather(*tasks)
 
+# Function to run the TempCleaner after 30 minutes
+async def run_temp_cleaner_after_delay():
+    # Sleep for 30 minutes (1800 seconds)
+    await asyncio.sleep(1800)
+    TempCleaner()  # Run TempCleaner
+
+# Main entry point
 if __name__ == "__main__":
     # Load the data and filter the postcodes for England
     csv_file = 'postcodes.csv'  # Adjust the filename if needed
@@ -175,6 +184,58 @@ if __name__ == "__main__":
     # Initialize the JsonDataHandler for storing data
     json_file = "crystal_data.json"
     handler = JsonDataHandler(json_file)
+    # Create a coroutine that will process postcodes and also trigger the cleaner after 30 minutes
+    async def main():
+        # Start processing the postcodes
+        processing_task = asyncio.create_task(process_multiple_postcodes(england_postcodes, handler, max_concurrent=20))
 
-    # Run the async processing for multiple postcodes, with a concurrency limit of 20
-    asyncio.run(process_multiple_postcodes(england_postcodes, handler, max_concurrent=20))
+        # Run TempCleaner after 30 minutes
+        cleaner_task = asyncio.create_task(run_temp_cleaner_after_delay())
+
+        # Wait for the processing task to finish
+        await processing_task
+
+        # Wait for the cleaner task (although this would just run after 30 minutes)
+        await cleaner_task
+
+    # Run the asyncio event loop for the main tasks
+    asyncio.run(main())
+
+
+        
+# async def process_multiple_postcodes(postcodes: list, handler, max_concurrent: int = 20):
+#     semaphore = asyncio.Semaphore(max_concurrent)
+
+#     async def semaphore_task(postcode):
+#         async with semaphore:
+#             await process_postcode(postcode, handler)
+
+#     tasks = [semaphore_task(postcode) for postcode in postcodes]
+#     await asyncio.gather(*tasks)
+
+
+
+# # Function to run the TempCleaner after 30 minutes
+# async def run_temp_cleaner_after_delay():
+#     # Sleep for 30 minutes (1800 seconds)
+#     await asyncio.sleep(1800)
+#     TempCleaner()  # Run TempCleaner
+
+
+# if __name__ == "__main__":
+#     # Load the data and filter the postcodes for England
+#     csv_file = 'postcodes.csv'  # Adjust the filename if needed
+#     data = pd.read_csv(csv_file)
+#     england_postcodes = data[data['Country'] == 'England']['Postcode'].tolist()  # Convert to list
+
+#     # Initialize the JsonDataHandler for storing data
+#     json_file = "crystal_data.json"
+#     handler = JsonDataHandler(json_file)
+
+#     # Run the async processing for multiple postcodes, with a concurrency limit of 20
+#     asyncio.run(process_multiple_postcodes(england_postcodes, handler, max_concurrent=20))
+
+
+
+
+

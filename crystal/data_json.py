@@ -20,6 +20,11 @@ class JsonDataHandler:
                 return {}  # Return empty dict if the JSON is invalid
         return {}
 
+    def if_postcode_exists(self,postcode):
+        if postcode in self.postcodes:
+            return True
+
+
     # Save the current postcodes data back to the JSON file
     def save_json(self):
         with open(self.json_file, 'w') as f:
